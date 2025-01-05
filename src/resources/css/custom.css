@@ -1,0 +1,11 @@
+.custom-scrollbar {
+	scrollbar-width: thin;
+	scrollbar-color: #696969 #ffffff;
+}
+
+/* .chat-bg {
+	background:
+		rgba(0, 0, 0, 0.5),
+		theme('colors.primary'),
+		url('../assets/ChatBG.jpg') no-repeat center center / cover;
+} */
