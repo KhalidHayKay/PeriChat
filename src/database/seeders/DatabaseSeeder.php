@@ -2,14 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Enums\ConversationTypeEnum;
 use App\Models\Conversation;
 use App\Models\Group;
 use App\Models\Message;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Grammar;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -23,7 +27,6 @@ class DatabaseSeeder extends Seeder
             'name'     => 'John Doe',
             'email'    => 'john@example.com',
             'password' => bcrypt('123456'),
-            'is_admin' => true,
         ]);
 
         User::factory()->create([
@@ -34,36 +37,91 @@ class DatabaseSeeder extends Seeder
 
         User::factory(10)->create();
 
-        // Group seed
+        // Group & Group-Conversation-Messages seed
         for ($i = 0; $i < 5; $i++) {
             /**
              * @var Group
              */
             $group = Group::factory()->create(['owner_id' => 1]);
 
-            $users = User::inRandomOrder()->limit(rand(2, 5))->pluck('id');
+            $users = User::inRandomOrder()->limit(rand(5, 10))->pluck('id');
             $group->users()->attach(array_unique([1, ...$users]));
+
+            $conversation = Conversation::factory()->create([
+                'type'     => ConversationTypeEnum::GROUP->value,
+                'group_id' => $group->id,
+            ]);
+
+            for ($j = 0; $j < 100; $j++) {
+                Message::factory()->create([
+                    'sender_id'       => fake()->randomElement(array_unique([1, ...$users])),
+                    'conversation_id' => $conversation->id,
+                ]);
+            }
+
         }
 
-        // Message seed
-        Message::factory(1000)->create();
+        // Seed User-Conversation-Messages
+        for ($i = 0; $i < 50; $i++) {
+            $senderId = fake()->randomElement([0, 1]);
 
-        // Conversation seed
-        $messages      = Message::whereNull('group_id')->orderBy('created_at')->get();
-        $conversations = $messages->groupBy(
-            fn (Message $message) => collect([
-                $message->sender_id,
-                $message->receiver_id,
-            ])->sort()->implode('_')
-        )
-            ->map(fn ($groupedMessages) => [
-                'user1_id'        => $groupedMessages->first()->sender_id,
-                'user2_id'        => $groupedMessages->first()->receiver_id,
-                'last_message_id' => $groupedMessages->last()->id,
-                'created_at'      => new Carbon(),
-                'updated_at'      => new Carbon(),
-            ])->values();
+            if ($senderId === 1) {
+                $receiverId = fake()->randomElement(
+                    User::where('id', '!=', 1)->pluck('id')->toArray()
+                );
+            } else {
+                $senderId   = fake()->randomElement(
+                    User::where('id', '!=', 1)->pluck('id')->toArray()
+                );
+                $receiverId = 1;
+            }
 
-        Conversation::insertOrIgnore($conversations->toArray());
+            $conversationId = Message::where(function (Builder $q) use ($receiverId, $senderId) {
+                $q->where('receiver_id', '=', $receiverId)
+                    ->where('sender_id', '=', $senderId);
+            })
+                ->orWhere(function (Builder $q) use ($receiverId, $senderId) {
+                    $q->where('receiver_id', '=', $senderId)
+                        ->where('sender_id', '=', $receiverId);
+                })
+                ->first()?->conversation_id;
+
+            if (! $conversationId) {
+                /**
+                 * @var Conversation
+                 */
+                $newConversation = Conversation::factory()->create([
+                    'type' => ConversationTypeEnum::PRIVATE ->value,
+                ]);
+                $newConversation->users()->attach([$senderId, $receiverId]);
+
+                $conversationId = $newConversation->id;
+            }
+
+            for ($j = 0; $j < 10; $j++) {
+                $messageSender   = fake()->randomElement([$senderId, $receiverId]);
+                $messageReceiver = $messageSender === $senderId ? $receiverId : $senderId;
+
+                Message::factory()->create([
+                    'conversation_id' => $conversationId,
+                    'sender_id'       => $messageSender,
+                    'receiver_id'     => $messageReceiver,
+                ]);
+            }
+        }
+
+        $latestMessages = Message::selectRaw('conversation_id, MAX(created_at) as last_message_date')
+            ->groupBy('conversation_id')
+            ->get();
+
+        // Step 2: Update the conversations table
+        foreach ($latestMessages as $latestMessage) {
+            $lastMessageId = Message::where('conversation_id', $latestMessage->conversation_id)
+                ->where('created_at', $latestMessage->last_message_date)
+                ->value('id');
+
+            Conversation::where('id', $latestMessage->conversation_id)
+                ->update(['last_message_id' => $lastMessageId]);
+        }
     }
 }

@@ -12,6 +12,14 @@ declare global {
 
 	/* eslint-disable no-var */
 	var route: typeof ziggyRoute;
+
+	interface User {
+		id: number;
+		name: string;
+		email: string;
+		email_verified_at?: string;
+		avatar?: string;
+	}
 }
 
 declare module '@inertiajs/core' {

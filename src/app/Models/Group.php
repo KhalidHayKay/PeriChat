@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Enums\ConversationTypeEnum;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 
 class Group extends Model
 {
@@ -16,8 +19,9 @@ class Group extends Model
     protected $fillable = [
         'name',
         'description',
+        'avatar',
+        'is_private',
         'owner_id',
-        'last_message_id',
     ];
 
     public function users(): BelongsToMany
@@ -25,9 +29,9 @@ class Group extends Model
         return $this->belongsToMany(User::class);
     }
 
-    public function messages(): HasMany
+    public function conversation(): HasOne
     {
-        return $this->hasMany(Message::class);
+        return $this->hasOne(Conversation::class);
     }
 
     public function owner(): BelongsTo
@@ -35,15 +39,23 @@ class Group extends Model
         return $this->belongsTo(User::class);
     }
 
-    public static function getUsergroups(User $user): Collection
+    public static function getUserGroups(User $user): Collection
     {
-        $query = self::select(['groups.*', 'messages.message as last_message', 'messages.created_at as last_message_date'])
-            ->join('group_user', 'group_user.group_id', '=', 'groups.id')
-            ->leftJoin('messages', 'messages.id', '=', 'groups.last_message_id')
-            ->where('group_user.user_id', '=', $user->id)
-            ->orderBy('messages.created_at', 'desc')
-            ->orderBy('groups.name')
-        ;
+        $query = self::select([
+            'groups.*',
+            'm.message as last_message',
+            'm.created_at as last_message_date',
+        ])
+            ->leftJoin('group_user as gu', 'gu.group_id', '=', 'groups.id')
+            ->leftJoin('conversations as c', 'c.group_id', '=', 'groups.id')
+            ->leftJoin('messages as m', 'm.id', '=', 'c.last_message_id')
+            ->where(function ($query) use ($user) {
+                $query->where('gu.user_id', '=', $user->id)
+                    ->orWhere('groups.is_private', '!=', true);
+            })
+            ->distinct()
+            ->orderBy('m.created_at', 'desc')
+            ->orderBy('groups.name');
 
         return $query->get();
     }
@@ -51,18 +63,13 @@ class Group extends Model
     public function toConversationArray(): array
     {
         return [
-            'id'                => $this->id,
-            'name'              => $this->name,
-            'description'       => $this->description,
-            'is_group'          => true,
-            'is_user'           => false,
-            'owner'             => $this->owner,
-            'users'             => $this->users,
-            'user_ids'          => $this->users->pluck('id'),
-            'created_at'        => $this->created_at,
-            'updated_at'        => $this->updated_at,
-            'last_message'      => $this->last_message,
-            'last_message_date' => $this->last_message_date,
+            'id'              => $this->id,
+            'name'            => $this->name,
+            'avatar'          => $this->avatar,
+            'type'            => ConversationTypeEnum::GROUP->value,
+            'groupUserIds'    => $this->users()->pluck('users.id'),
+            'lastMessage'     => $this->last_message,
+            'lastMessageDate' => $this->last_message_date,
         ];
     }
 }

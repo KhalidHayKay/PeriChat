@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Message extends Model
 {
@@ -15,7 +16,8 @@ class Message extends Model
         'message',
         'sender_id',
         'receiver_id',
-        'group_id',
+        'conversation_id',
+        'read_at',
     ];
 
     public function sender(): BelongsTo
@@ -23,20 +25,10 @@ class Message extends Model
         return $this->belongsTo(User::class, 'sender_id');
     }
 
-    public function receiver(): BelongsTo
+    public function conversation(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'receiver_id');
+        return $this->belongsTo(Conversation::class);
     }
-
-    public function group(): BelongsTo
-    {
-        return $this->belongsTo(Group::class);
-    }
-
-    // public function conversation(): BelongsTo
-    // {
-    //     return $this->belongsTo(Conversation::class);
-    // }
 
     public function attahcments(): HasMany
     {

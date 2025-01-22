@@ -5,13 +5,14 @@ namespace Database\Factories;
 use App\Enums\ConversationTypeEnum;
 use App\Models\Conversation;
 use App\Models\Group;
+use App\Models\Message;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Message>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Conversation>
  */
-class MessageFactory extends Factory
+class ConversationFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -21,8 +22,6 @@ class MessageFactory extends Factory
     public function definition(): array
     {
         return [
-            'message'    => $this->faker->realText(150),
-            'read_at'    => $this->faker->dateTimeBetween('-1 year'),
             'created_at' => $this->faker->dateTimeBetween('-1 year'),
         ];
 

@@ -1,20 +1,20 @@
 import SortConversation from '@/actions/sort-conversation';
-import Avatar from '@/Components/app/conversation/Avatar';
+import Avatar from '@/Components/app/Avatar';
 import ConversationItem from '@/Components/app/conversation/ConversationItem';
+import OnlineUsersContext from '@/context/OnlineUsersContext';
+import { ConversationTypeEnum } from '@/enums/ConversationTypeEnum';
 import { cn } from '@/utils/cn';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { usePage } from '@inertiajs/react';
 import { MessageSquareTextIcon } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-	const page = usePage();
-	const user = page.props.auth.user;
-	const conversations = page.props.conversations as [];
-	const selectedConversation = page.props.selectedConversation;
-	console.log(conversations);
+	const props = usePage().props;
+	const user = props.auth.user;
+	const conversations = props.conversations as Conversation[];
+	const selectedConversation = props.selectedConversation as Conversation;
 
-	const [onlineUsers, setOnlineUsers] = useState<{ [key: number]: {} }>({});
 	const [localConversation, setLocalConversation] = useState<Conversation[]>(
 		[]
 	);
@@ -22,7 +22,7 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 		Conversation[]
 	>([]);
 
-	const checkIfUserIsOnline = (userId: number) => !!onlineUsers[userId];
+	const { checkIfUserIsOnline } = useContext(OnlineUsersContext);
 
 	useEffect(() => {
 		setSortedConversation(SortConversation(localConversation));
@@ -32,41 +32,21 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 		setLocalConversation(conversations);
 	}, [conversations]);
 
-	useEffect(() => {
-		window.Echo.join('online')
-			.here((users: []) => {
-				const onlineUsersObj = Object.fromEntries(
-					users.map((user: { id: number }) => [user.id, user])
-				);
-
-				setOnlineUsers((prev) => {
-					return { ...prev, ...onlineUsersObj };
-				});
-			})
-			.joining((user: { id: number }) => {
-				setOnlineUsers((prev) => {
-					return { ...prev, [user.id]: user };
-				});
-			})
-			.leaving((user: { id: number }) => {
-				setOnlineUsers((prev: { [key: number]: {} }) => {
-					delete prev[user.id];
-					return prev;
-				});
-			})
-			.error((error: any) => {
-				console.error(error);
-			});
-
-		return () => window.Echo.leave('online');
-	}, []);
+	console.log(conversations);
 
 	return (
 		<>
-			<div className='flex-1 size-full h-screen flex gap-x-2 sm:p-2'>
+			<div
+				className={cn(
+					'flex-1 size-full h-screen flex sm:p-2 overflow-hidden',
+					selectedConversation ? 'gap-x-0 sm:gap-x-2' : 'gap-x-2'
+				)}
+			>
 				<aside
 					className={cn(
-						'h-full w-full sm:w-[300px] md:w-[370px] lg:w-[450px] bg-primary py-4 rounded-lg shadow space-y-5'
+						'transition duration-100',
+						'h-full w-full sm:w-[300px] md:w-[370px] lg:w-[450px] bg-primary py-4 rounded-lg shadow space-y-5',
+						selectedConversation ? '-ml-[100%] sm:-ml-0' : ''
 					)}
 				>
 					<header className='px-4 mobile:px-10 sm:px-4 space-y-5'>
@@ -79,7 +59,7 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 								/>
 								<div className=''>
 									<h1 className='text-lg font-semibold'>
-										Khalid HayKay
+										{user.name}
 									</h1>
 									<p className='text-primary-content'>
 										Account info
@@ -127,16 +107,21 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 									{sortedConversation.map((conversation) => (
 										<ConversationItem
 											key={
-												`${conversation.is_group ? 'group_' : 'user_'}` +
+												`${conversation.type === 'group' ? 'group_' : 'user_'}` +
 												conversation.id
 											}
 											conversation={conversation}
-											online={checkIfUserIsOnline(
-												conversation.is_user
-													? conversation.id
-													: 0
-											)}
-											selectedConversation={11}
+											online={
+												conversation.type ===
+												ConversationTypeEnum.PRIVATE
+													? checkIfUserIsOnline(
+															conversation.id
+														)
+													: undefined
+											}
+											selectedConversation={
+												selectedConversation
+											}
 										/>
 									))}
 								</div>

@@ -1,3 +1,4 @@
+import { OnlineUsersProvider } from '@/context/OnlineUsersContext';
 import { usePage } from '@inertiajs/react';
 import { PropsWithChildren, ReactNode, useState } from 'react';
 import '../../css/custom.css';
@@ -12,10 +13,11 @@ export default function Authenticated({
 		useState(false);
 
 	return (
-		<div className='min-h-screen bg-secondary'>
-			{children}
+		<OnlineUsersProvider>
+			<div className='min-h-screen bg-secondary'>
+				{children}
 
-			{/* <nav className='border-b border-primary/80 bg-primary'>
+				{/* <nav className='border-b border-primary/80 bg-primary'>
 				<div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
 					<div className='flex h-16 justify-between'>
 						<div className='flex'>
@@ -173,6 +175,7 @@ export default function Authenticated({
 			)}
 
 			<main>{children}</main> */}
-		</div>
+			</div>
+		</OnlineUsersProvider>
 	);
 }

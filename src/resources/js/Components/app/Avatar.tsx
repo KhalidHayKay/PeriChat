@@ -1,6 +1,6 @@
 import { cn } from '@/utils/cn';
 import { UserGroupIcon } from '@heroicons/react/24/outline';
-import { UserCircleIcon } from 'lucide-react';
+import { User } from 'lucide-react';
 
 const Avatar = ({
 	avatarUrl,
@@ -9,7 +9,7 @@ const Avatar = ({
 	isProfile = false,
 }: {
 	avatarUrl: string | null;
-	online: boolean;
+	online?: boolean;
 	isGroup?: boolean;
 	isProfile?: boolean;
 }) => {
@@ -17,23 +17,27 @@ const Avatar = ({
 		<>
 			<div
 				className={cn(
-					'avatar',
-					'before:!top-auto before:bottom-[7%]',
-					online ? 'online' : 'offline'
+					'avatar cursor-pointer',
+					'before:!top-auto before:bottom-[7%] before:!size-2 before:!outline-0',
+					online === undefined
+						? 'before:!size-0'
+						: online === true
+							? 'online'
+							: 'offline before:!bg-gray-400'
 				)}
 			>
 				<div
 					className={cn(
-						'ring-secondary/50 ring-offset-base-100 w-11 rounded-full ring ring-offset-2',
+						'w-11 bg-secondary/80 !flex items-center justify-center rounded-full',
 						isProfile && 'w-12'
 					)}
 				>
 					{avatarUrl && avatarUrl !== '' ? (
 						<img src='https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp' />
 					) : !isGroup ? (
-						<UserCircleIcon className='size-full' />
+						<User className='size-[70%] text-opacity-50' />
 					) : (
-						<UserGroupIcon className='size-full' />
+						<UserGroupIcon className='size-[60%] text-opacity-50' />
 					)}
 				</div>
 			</div>
