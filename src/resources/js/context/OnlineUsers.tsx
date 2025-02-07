@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 type OnlineUsersContextTypes = {
 	checkIfUserIsOnline: (userId: number) => boolean;
@@ -47,4 +47,8 @@ export const OnlineUsersProvider = ({ children }: { children: any }) => {
 	);
 };
 
-export default OnlineUsersContext;
+const useOnlineUsers = () => {
+	return useContext(OnlineUsersContext);
+};
+
+export default useOnlineUsers;

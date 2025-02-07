@@ -5,6 +5,6 @@ interface Message {
 	receiverId: number | null;
 	groupId: number | null;
 	sender: User;
-	attachments: string | null;
+	attachments: string[] | null;
 	createdAt: string;
 }

@@ -1,31 +1,119 @@
 import { cn } from '@/utils/cn';
+import axios, { AxiosError } from 'axios';
 import { format } from 'date-fns';
 import { CheckCheck } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 const ConversationMessages = ({
 	messages,
+	setMessages,
 	selectedConversation,
 	user,
 }: {
 	messages: Message[];
+	setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
 	selectedConversation: Conversation;
 	user: User;
 }) => {
 	const conversationCtrRef = useRef<HTMLDivElement | null>(null);
+	const loadOlderMessageIntercept = useRef<HTMLDivElement | null>(null);
+
+	const [scrollFromBottom, setScrollFromBottom] = useState(0);
+	const [noOlderMessages, setNoOlderMessages] = useState(false);
+
+	const loadOlderMessages = useCallback(async () => {
+		// if (noOlderMessages) {
+		// 	return;
+		// }
+
+		const lastMessage = messages[0];
+
+		try {
+			const res = await axios.get(
+				route('message.loadOlder', lastMessage.id)
+			);
+
+			const olderMessages = res.data.data as Message[];
+
+			if (olderMessages.length === 0) {
+				setNoOlderMessages(true);
+				return;
+			}
+
+			if (!conversationCtrRef.current) {
+				throw new Error("'conversationCtrRef.current' is null");
+			}
+
+			const scrollHeight = conversationCtrRef.current.scrollHeight;
+			const scrollTop = conversationCtrRef.current.scrollTop;
+			const clientHeight = conversationCtrRef.current.clientHeight;
+			const tmpScrollFromBottom = scrollHeight - scrollTop - clientHeight;
+
+			setScrollFromBottom(tmpScrollFromBottom);
+
+			setMessages((prev) => [...olderMessages.reverse(), ...prev]);
+		} catch (err) {
+			if (err instanceof AxiosError) {
+				console.error(err.response?.data);
+			} else {
+				console.error(err);
+			}
+		}
+	}, [messages, noOlderMessages]);
+
+	useEffect(() => {
+		setTimeout(() => {
+			if (conversationCtrRef.current) {
+				conversationCtrRef.current.scrollTop =
+					conversationCtrRef.current.scrollHeight;
+			}
+		}, 10);
+
+		setScrollFromBottom(0);
+		setNoOlderMessages(false);
+	}, [selectedConversation]);
 
 	useEffect(() => {
 		if (conversationCtrRef.current) {
 			conversationCtrRef.current.scrollTop =
-				conversationCtrRef.current.scrollHeight;
+				conversationCtrRef.current.scrollHeight -
+				conversationCtrRef.current.offsetHeight -
+				scrollFromBottom;
 		}
-	}, [selectedConversation]);
+
+		if (noOlderMessages) {
+			return;
+		}
+
+		const observer = new IntersectionObserver(
+			(entries) =>
+				entries.forEach(
+					(entry) => entry.isIntersecting && loadOlderMessages()
+				),
+			{
+				rootMargin: '0px 0px 250px 0px',
+			}
+		);
+
+		if (loadOlderMessageIntercept.current) {
+			setTimeout(() => {
+				observer.observe(
+					loadOlderMessageIntercept.current as HTMLDivElement
+				);
+			}, 100);
+		}
+
+		return () => {
+			observer.disconnect();
+		};
+	}, [messages]);
 
 	return (
 		<div
 			ref={conversationCtrRef}
-			className=' max-h-full px-2 pt-5 space-y-2 overflow-y-auto custom-scrollbar'
+			className=' max-h-full px-2 py-5 space-y-2 overflow-y-auto custom-scrollbar'
 		>
+			<div ref={loadOlderMessageIntercept}></div>
 			{messages.map((message) => (
 				<div
 					key={message.id}

@@ -1,4 +1,5 @@
 import FormatChatDate from '@/actions/format-chat-date';
+import { ConversationTypeEnum } from '@/enums/ConversationTypeEnum';
 import { cn } from '@/utils/cn';
 import { Link } from '@inertiajs/react';
 import Avatar from '../Avatar';
@@ -15,7 +16,7 @@ const ConversationItem = ({
 	return (
 		<Link
 			href={
-				conversation.type === 'group'
+				conversation.type === ConversationTypeEnum.GROUP
 					? route('conversation.group', conversation as any)
 					: route('conversation.private', conversation as any)
 			}
@@ -31,7 +32,7 @@ const ConversationItem = ({
 			<Avatar
 				avatarUrl={conversation.avatar}
 				online={online}
-				isGroup={conversation.type === 'group'}
+				isGroup={conversation.type === ConversationTypeEnum.GROUP}
 			/>
 			<div className='flex-1'>
 				<div className='flex items-center justify-between'>

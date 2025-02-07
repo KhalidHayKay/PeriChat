@@ -9,14 +9,14 @@ Broadcast::channel('online', function (User $user) {
 });
 
 Broadcast::channel(
-    'message.private.{user1_id}-{user2-id}',
-    function (User $user, int $user1ID, int $user2Id) {
-        return $user->id === $user1ID || $user->id === $user2Id ? $user : null;
+    'message.private.{user1Id}-{user2Id}',
+    function (User $user, int $user1Id, int $user2Id) {
+        return $user->id === $user1Id || $user->id === $user2Id ? $user : null;
     }
 );
 
 Broadcast::channel(
-    'message.private.group.{groupId}',
+    'message.group.{groupId}',
     function (User $user, int $groupId) {
         return $user->groups->contains('id', $groupId) ? $user : null;
     }

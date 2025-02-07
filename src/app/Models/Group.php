@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ConversationTypeEnum;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -69,7 +70,7 @@ class Group extends Model
             'type'            => ConversationTypeEnum::GROUP->value,
             'groupUserIds'    => $this->users()->pluck('users.id'),
             'lastMessage'     => $this->last_message,
-            'lastMessageDate' => $this->last_message_date,
+            'lastMessageDate' => $this->last_message_date ? Carbon::parse($this->last_message_date)->setTimezone('UTC')->toIso8601String() : null,
         ];
     }
 }

@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use App\Enums\ConversationTypeEnum;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -128,7 +129,7 @@ class User extends Authenticatable
             'avatar'          => $this->avatar,
             'type'            => ConversationTypeEnum::PRIVATE ->value,
             'lastMessage'     => $this->last_message,
-            'lastMessageDate' => $this->last_message_date,
+            'lastMessageDate' => $this->last_message_date ? Carbon::parse($this->last_message_date)->setTimezone('UTC')->toIso8601String() : null
         ];
     }
 }

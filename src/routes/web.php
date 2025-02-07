@@ -14,7 +14,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/message', [MessageController::class, 'store'])->name('message.store');
     Route::delete('/message', [MessageController::class, 'destroy'])->name('message.destroy');
 
-    Route::get('/message/load-older', [MessageController::class, 'loadOlder'])->name('message.loadOlder');
+    Route::get('/message/older/{message}', [MessageController::class, 'loadOlder'])->name('message.loadOlder');
 });
 
 Route::middleware('auth')->group(function () {

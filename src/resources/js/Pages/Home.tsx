@@ -1,6 +1,8 @@
 import ConversationHeader from '@/Components/app/conversation/ConversationHeader';
 import ConversationInput from '@/Components/app/conversation/ConversationInput';
 import ConversationMessages from '@/Components/app/conversation/ConversationMessages';
+import useEventBus from '@/context/EventBus';
+import { ConversationTypeEnum } from '@/enums/ConversationTypeEnum';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
 import ChatLayout from '@/Layouts/ChatLayout';
 import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
@@ -18,6 +20,35 @@ const Home = ({
 	const user = page.props.auth.user;
 
 	const [localMessages, setLocalMessages] = useState<Message[]>([]);
+	const { on } = useEventBus();
+
+	const messageCreated = (message: Message) => {
+		if (
+			selectedConversation &&
+			selectedConversation.type === ConversationTypeEnum.GROUP &&
+			selectedConversation.id === message.groupId
+		) {
+			setLocalMessages((prev) => [...prev, message]);
+		}
+
+		if (
+			selectedConversation &&
+			selectedConversation.type === ConversationTypeEnum.PRIVATE &&
+			!message.groupId &&
+			(selectedConversation.id === message.senderId ||
+				selectedConversation.id === message.receiverId)
+		) {
+			setLocalMessages((prev) => [...prev, message]);
+		}
+	};
+
+	useEffect(() => {
+		const offCreated = on('message.created', messageCreated);
+
+		return () => {
+			offCreated();
+		};
+	}, [selectedConversation]);
 
 	useEffect(() => {
 		setLocalMessages(messages ? messages.data.reverse() : []);
@@ -43,6 +74,7 @@ const Home = ({
 						{localMessages.length > 0 ? (
 							<ConversationMessages
 								messages={localMessages}
+								setMessages={setLocalMessages}
 								selectedConversation={selectedConversation}
 								user={user}
 							/>
@@ -53,7 +85,7 @@ const Home = ({
 						)}
 					</div>
 
-					<ConversationInput />
+					<ConversationInput conversation={selectedConversation} />
 				</>
 			)}
 		</div>

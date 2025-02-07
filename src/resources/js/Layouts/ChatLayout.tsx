@@ -1,13 +1,14 @@
 import SortConversation from '@/actions/sort-conversation';
 import Avatar from '@/Components/app/Avatar';
 import ConversationItem from '@/Components/app/conversation/ConversationItem';
-import OnlineUsersContext from '@/context/OnlineUsersContext';
+import useEventBus from '@/context/EventBus';
+import useOnlineUsers from '@/context/OnlineUsers';
 import { ConversationTypeEnum } from '@/enums/ConversationTypeEnum';
 import { cn } from '@/utils/cn';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { usePage } from '@inertiajs/react';
 import { MessageSquareTextIcon } from 'lucide-react';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 	const props = usePage().props;
@@ -22,7 +23,43 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 		Conversation[]
 	>([]);
 
-	const { checkIfUserIsOnline } = useContext(OnlineUsersContext);
+	const { emit, on } = useEventBus();
+	const { checkIfUserIsOnline } = useOnlineUsers();
+
+	const messageCreated = (message: Message) => {
+		setLocalConversation((prev) => {
+			return prev.map((c) => {
+				if (
+					c.type === ConversationTypeEnum.PRIVATE &&
+					!message.groupId &&
+					(c.id === message.senderId || c.id === message.receiverId)
+				) {
+					c.lastMessage = message.message;
+					c.lastMessageDate = message.createdAt;
+					return c;
+				}
+
+				if (
+					c.type === ConversationTypeEnum.GROUP &&
+					c.id === message.groupId
+				) {
+					c.lastMessage = message.message;
+					c.lastMessageDate = message.createdAt;
+					return c;
+				}
+
+				return c;
+			});
+		});
+	};
+
+	useEffect(() => {
+		const offCreated = on('message.created', messageCreated);
+
+		return () => {
+			offCreated();
+		};
+	}, [on]);
 
 	useEffect(() => {
 		setSortedConversation(SortConversation(localConversation));
@@ -32,7 +69,62 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 		setLocalConversation(conversations);
 	}, [conversations]);
 
-	console.log(conversations);
+	useEffect(() => {
+		conversations.forEach((conversation) => {
+			let channel = `message.group.${conversation.id}`;
+
+			if (conversation.type === ConversationTypeEnum.PRIVATE) {
+				channel = `message.private.${[user.id, conversation.id]
+					.sort((a, b) => a - b)
+					.join('-')}`;
+			}
+
+			// console.log('start listening to channel ' + channel);
+
+			window.Echo.private(channel)
+				.listen('SocketMessage', (e: { message: Message }) => {
+					const message = e.message;
+
+					emit('message.created', message);
+
+					if (message.senderId === user.id) {
+						return;
+					}
+
+					emit('newMessageNotification', {
+						user: message.sender,
+						groupId: message.groupId,
+						message:
+							message.message ||
+							`shared ${
+								message.attachments?.length === 1
+									? 'an attachment'
+									: message.attachments?.length +
+										' attachments'
+							}`,
+					});
+				})
+				.error((err: any) => {
+					console.error(err);
+				});
+		});
+
+		return () => {
+			conversations.forEach((conversation) => {
+				let channel = `message.group.${conversation.id}`;
+
+				if (conversation.type === ConversationTypeEnum.PRIVATE) {
+					channel = `message.private.${[user.id, conversation.id]
+						.sort((a, b) => a - b)
+						.join('-')}`;
+				}
+
+				// console.log('Leaving channel ' + channel);
+
+				window.Echo.leave(channel);
+			});
+		};
+	}, [conversations]);
 
 	return (
 		<>
@@ -107,7 +199,7 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 									{sortedConversation.map((conversation) => (
 										<ConversationItem
 											key={
-												`${conversation.type === 'group' ? 'group_' : 'user_'}` +
+												`${conversation.type === ConversationTypeEnum.GROUP ? 'group_' : 'user_'}` +
 												conversation.id
 											}
 											conversation={conversation}

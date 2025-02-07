@@ -12,6 +12,7 @@ use App\Models\Message;
 use App\Models\MessageAttachment;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -54,7 +55,8 @@ class MessageController extends Controller
 
     public function loadOlder(Message $message)
     {
-        $messages = Message::where('')
+        $messages = Message::where('created_at', '<', $message->created_at)
+            ->where('conversation_id', '=', $message->conversation->id)
             ->latest()
             ->paginate(10)
         ;
@@ -64,20 +66,29 @@ class MessageController extends Controller
 
     public function store(StoreMessageRequest $request)
     {
-        $data = $request->validated();
+        $data              = $request->validated();
+        $data['sender_id'] = Auth::id();
 
-        $conversation = Conversation::firstOrCreate([
-            'receiver_id' => $data->receiverId ?? null,
-            'group_id'    => $data->groupId ?? null,
-            'type'        => $data->type,
-        ]);
+        if (array_key_exists('group_id', $data)) {
+            $conversation = Conversation::getMessageConversation(
+                ConversationTypeEnum::GROUP,
+                $data['group_id'],
+            );
+        } else if (array_key_exists('receiver_id', $data)) {
+            $conversation = Conversation::getMessageConversation(
+                ConversationTypeEnum::PRIVATE ,
+                participants: [$data['receiver_id'], $data['sender_id']]
+            );
+        }
 
-        $data['sender_id']       = Auth::id();
         $data['conversation_id'] = $conversation->id;
+        $data['read_at']         = now();
 
         $files = $data['attachments'] ?? null;
 
+        // dd($data);
         $message = Message::create($data);
+        $conversation->update(['last_message_id' => $message->id]);
 
         $attachments = [];
         if ($files) {
