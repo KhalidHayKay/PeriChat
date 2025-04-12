@@ -5,6 +5,9 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+use function PHPUnit\Framework\isArray;
+use function PHPUnit\Framework\isEmpty;
+
 class MessageResource extends JsonResource
 {
     public static $wrap = null;
@@ -18,12 +21,14 @@ class MessageResource extends JsonResource
     {
         return [
             'id'          => $this->id,
-            'message'     => $this->message,
+            'message'     => $this->message ?? "",
             'senderId'    => (int) $this->sender_id,
             'receiverId'  => (int) $this->receiver_id,
             'groupId'     => $this->conversation->group_id,
             'sender'      => new UserResource($this->sender),
-            'attachments' => $this->attachments ? MessageAttachmentResource::collection($this->attachments) : null,
+            'attachments' => collect($this->attachments)->isNotEmpty()
+                ? MessageAttachmentResource::collection($this->attachments)
+                : null,
             'createdAt'   => $this->created_at,
         ];
     }

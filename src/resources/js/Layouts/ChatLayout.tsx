@@ -4,9 +4,10 @@ import ConversationItem from '@/Components/app/conversation/ConversationItem';
 import useEventBus from '@/context/EventBus';
 import useOnlineUsers from '@/context/OnlineUsers';
 import { ConversationTypeEnum } from '@/enums/ConversationTypeEnum';
-import { cn } from '@/utils/cn';
+import { cn } from '@/utils/utils';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { usePage } from '@inertiajs/react';
+import axios from 'axios';
 import { MessageSquareTextIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
@@ -19,12 +20,19 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 	const [localConversation, setLocalConversation] = useState<Conversation[]>(
 		[]
 	);
+	// console.log(localConversation);
 	const [sortedConversation, setSortedConversation] = useState<
 		Conversation[]
 	>([]);
 
 	const { emit, on } = useEventBus();
 	const { checkIfUserIsOnline } = useOnlineUsers();
+
+	const incrementUnreadCount = (id: number) => {
+		axios
+			.post(route('message.incrementUnread', id))
+			.catch((err) => console.error(err));
+	};
 
 	const messageCreated = (message: Message) => {
 		setLocalConversation((prev) => {
@@ -36,6 +44,15 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 				) {
 					c.lastMessage = message.message;
 					c.lastMessageDate = message.createdAt;
+
+					if (
+						// !selectedConversation ||
+						selectedConversation?.id !== message.senderId
+					) {
+						const count = c.unreadMessageCount++;
+						incrementUnreadCount(message.id);
+					}
+
 					return c;
 				}
 
@@ -102,6 +119,10 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 									: message.attachments?.length +
 										' attachments'
 							}`,
+					});
+
+					emit('incremenetUnread', {
+						receiver: message.receiverId,
 					});
 				})
 				.error((err: any) => {
@@ -202,6 +223,7 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 												`${conversation.type === ConversationTypeEnum.GROUP ? 'group_' : 'user_'}` +
 												conversation.id
 											}
+											user={user}
 											conversation={conversation}
 											online={
 												conversation.type ===

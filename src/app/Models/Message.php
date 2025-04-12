@@ -17,7 +17,6 @@ class Message extends Model
         'sender_id',
         'receiver_id',
         'conversation_id',
-        'read_at',
     ];
 
     public function sender(): BelongsTo
@@ -25,12 +24,17 @@ class Message extends Model
         return $this->belongsTo(User::class, 'sender_id');
     }
 
+    public function receiver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'receiver_id');
+    }
+
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(Conversation::class);
     }
 
-    public function attahcments(): HasMany
+    public function attachments(): HasMany
     {
         return $this->hasMany(MessageAttachment::class);
     }

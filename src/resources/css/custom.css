@@ -3,9 +3,13 @@
 	scrollbar-color: #696969 #ffffff;
 }
 
-/* .chat-bg {
-	background:
-		rgba(0, 0, 0, 0.5),
-		theme('colors.primary'),
-		url('../assets/ChatBG.jpg') no-repeat center center / cover;
-} */
+.EmojiPickerReact {
+	--epr-bg-color: theme('colors.primary') !important;
+	--epr-category-label-bg-color: theme('colors.secondary') !important;
+}
+
+.message-image-hover-effect:hover img {
+	/* transform: scale(1.025); */
+	opacity: 0.9;
+	transition: all 0.1s ease;
+}

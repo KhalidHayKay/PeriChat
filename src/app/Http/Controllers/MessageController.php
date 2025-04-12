@@ -107,7 +107,7 @@ class MessageController extends Controller
                 $attachments[] = MessageAttachment::create($model);
             }
 
-            $message->attahcments = $attachments;
+            $message->attachments = $attachments;
         }
 
         SocketMessage::dispatch($message);

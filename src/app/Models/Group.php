@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class Group extends Model
@@ -44,7 +45,9 @@ class Group extends Model
     {
         $query = self::select([
             'groups.*',
+            'c.id as c_id',
             'm.message as last_message',
+            'm.sender_id as last_message_sender',
             'm.created_at as last_message_date',
         ])
             ->leftJoin('group_user as gu', 'gu.group_id', '=', 'groups.id')
@@ -61,16 +64,29 @@ class Group extends Model
         return $query->get();
     }
 
+    public function getUnreadCount()
+    {
+        $query = DB::table('group_user')
+            ->select('unread_messages_count')
+            ->where('group_id', $this->id)
+            ->where('user_id', Auth::id())
+        ;
+
+        return $query->first()?->unread_messages_count;
+    }
+
     public function toConversationArray(): array
     {
         return [
-            'id'              => $this->id,
-            'name'            => $this->name,
-            'avatar'          => $this->avatar,
-            'type'            => ConversationTypeEnum::GROUP->value,
-            'groupUserIds'    => $this->users()->pluck('users.id'),
-            'lastMessage'     => $this->last_message,
-            'lastMessageDate' => $this->last_message_date ? Carbon::parse($this->last_message_date)->setTimezone('UTC')->toIso8601String() : null,
+            'id'                  => $this->id,
+            'name'                => $this->name,
+            'avatar'              => $this->avatar,
+            'type'                => ConversationTypeEnum::GROUP->value,
+            'groupUserIds'        => $this->users()->pluck('users.id'),
+            'lastMessage'         => $this->last_message,
+            'lastMessageSenderId' => $this->last_message_sender,
+            'lastMessageDate'     => $this->last_message_date ? Carbon::parse($this->last_message_date)->setTimezone('UTC')->toIso8601String() : null,
+            'unreadMessageCount'  => $this->getUnreadCount(),
         ];
     }
 }

@@ -26,7 +26,7 @@ const ConversationHeader = ({
 	return (
 		<div className='p-4 flex items-center justify-between'>
 			<div className='flex items-center gap-x-2'>
-				<Link href={'/'} className='sm:hidden mr-2'>
+				<Link href={'/'} className='mr-2'>
 					<ArrowLeft className='size-7' />
 				</Link>
 				<Avatar

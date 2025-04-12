@@ -20,6 +20,7 @@ const Home = ({
 	const user = page.props.auth.user;
 
 	const [localMessages, setLocalMessages] = useState<Message[]>([]);
+
 	const { on } = useEventBus();
 
 	const messageCreated = (message: Message) => {
@@ -55,7 +56,7 @@ const Home = ({
 	}, [messages]);
 
 	return (
-		<div className='size-full flex flex-col divide-y divide-secondary'>
+		<div className='relative size-full flex flex-col divide-y divide-secondary'>
 			{!selectedConversation ? (
 				<div className='size-full flex flex-col gap-y-3 items-center justify-center'>
 					<h2 className='text-2xl font-bold'>PeriChat</h2>
@@ -70,14 +71,16 @@ const Home = ({
 						selectedConversation={selectedConversation}
 					/>
 
-					<div className='flex-1 bg-secondary/50 overflow-hidden'>
+					<div className='flex-1 bg-secondary/50 overflow-hidden relative'>
 						{localMessages.length > 0 ? (
-							<ConversationMessages
-								messages={localMessages}
-								setMessages={setLocalMessages}
-								selectedConversation={selectedConversation}
-								user={user}
-							/>
+							<>
+								<ConversationMessages
+									messages={localMessages}
+									setMessages={setLocalMessages}
+									selectedConversation={selectedConversation}
+									user={user}
+								/>
+							</>
 						) : (
 							<div className='size-full flex items-center justify-center'>
 								No message to see. start a conversation.

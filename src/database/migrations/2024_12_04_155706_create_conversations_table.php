@@ -26,6 +26,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('conversation_id')->constrained('conversations')->onDelete('cascade');
+            $table->integer('unread_messages_count')->default(0);
             $table->timestamps();
         });
     }

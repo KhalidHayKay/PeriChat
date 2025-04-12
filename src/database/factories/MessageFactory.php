@@ -22,7 +22,6 @@ class MessageFactory extends Factory
     {
         return [
             'message'    => $this->faker->realText(150),
-            'read_at'    => $this->faker->dateTimeBetween('-1 year'),
             'created_at' => $this->faker->dateTimeBetween('-1 year'),
         ];
 

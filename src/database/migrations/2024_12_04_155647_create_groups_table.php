@@ -30,6 +30,7 @@ return new class extends Migration
                 fn (GroupRoleEnum $role) => $role->value,
                 GroupRoleEnum::cases()
             ));
+            $table->integer('unread_messages_count')->default(0);
             $table->timestamp('blocked_at')->nullable();
             $table->timestamps();
         });

@@ -1,8 +1,10 @@
-import { cn } from '@/utils/cn';
+import { isImage, isVideo } from '@/actions/file-check';
+import { cn } from '@/utils/utils';
 import axios, { AxiosError } from 'axios';
 import { format } from 'date-fns';
-import { CheckCheck } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import DisplayModal from './attachment/DisplayModal';
+import MessageAttachment from './attachment/MessageAttachment';
 
 const ConversationMessages = ({
 	messages,
@@ -20,6 +22,10 @@ const ConversationMessages = ({
 
 	const [scrollFromBottom, setScrollFromBottom] = useState(0);
 	const [noOlderMessages, setNoOlderMessages] = useState(false);
+	const [viewData, setViewData] = useState<{
+		attachments: ServerAttachment[];
+		index: number;
+	} | null>(null);
 
 	const loadOlderMessages = useCallback(async () => {
 		// if (noOlderMessages) {
@@ -60,6 +66,27 @@ const ConversationMessages = ({
 			}
 		}
 	}, [messages, noOlderMessages]);
+
+	const onAttachmentClick = (
+		attachments: ServerAttachment[],
+		index: number
+	) => {
+		setViewData({ attachments, index });
+	};
+
+	// useEffect(() => {
+	// 	const resetUnread = async () => {
+	// 		try {
+	// 			const res = await axios.post(
+	// 				route('message.markRead', messages[messages.length - 1].id)
+	// 			);
+	// 		} catch (error) {
+	// 			console.log(error);
+	// 		}
+	// 	};
+
+	// 	resetUnread();
+	// }, [selectedConversation]);
 
 	useEffect(() => {
 		setTimeout(() => {
@@ -109,55 +136,133 @@ const ConversationMessages = ({
 	}, [messages]);
 
 	return (
-		<div
-			ref={conversationCtrRef}
-			className=' max-h-full px-2 py-5 space-y-2 overflow-y-auto custom-scrollbar'
-		>
-			<div ref={loadOlderMessageIntercept}></div>
-			{messages.map((message) => (
-				<div
-					key={message.id}
-					className={cn(
-						'chat',
-						message.senderId === user.id ? 'chat-end' : 'chat-start'
-					)}
-				>
-					<div
-						className={cn(
-							'chat-header flex items-center gap-x-1',
-							message.senderId === user.id ? 'mr-1' : 'ml-1'
-						)}
-					>
-						{message.groupId && (
-							<div className='font-semibold inline'>
-								{message.sender.name !== user.name
-									? message.sender.name
-									: 'You'}
+		<>
+			<DisplayModal data={viewData} onClose={() => setViewData(null)} />
+
+			<div
+				ref={conversationCtrRef}
+				className='max-h-full px-2 py-5 space-y-2 overflow-y-auto custom-scrollbar'
+			>
+				<div ref={loadOlderMessageIntercept}></div>
+				{messages.map((message) => {
+					const displayableAttachments = message.attachments?.filter(
+						(att) => isImage(att) || isVideo(att)
+					);
+
+					const unDisplayableAttachments =
+						message.attachments?.filter(
+							(att) => !isImage(att) && !isVideo(att)
+						);
+
+					const hasText =
+						messages.find((m) => m.id === message.id)?.message !==
+						'';
+
+					return (
+						<div
+							key={message.id}
+							className={cn(
+								'chat',
+								message.senderId === user.id
+									? 'chat-end'
+									: 'chat-start'
+							)}
+						>
+							<div
+								className={cn(
+									'chat-header flex items-center gap-x-1',
+									message.senderId === user.id
+										? 'mr-1'
+										: 'ml-1'
+								)}
+							>
+								{message.groupId && (
+									<div className='font-semibold inline'>
+										{message.sender.name !== user.name
+											? message.sender.name
+											: 'You'}
+									</div>
+								)}
+								<time className='text-[0.8rem]'>
+									{format(
+										message.createdAt,
+										'MMM dd, hh:mm aa'
+									)}
+								</time>
 							</div>
-						)}
-						<time className='text-[0.8rem]'>
-							{/* {format(message.createdAt, 'hh:mm aaa')} */}
-							{format(message.createdAt, 'MMM dd, hh:mm aaa')}
-						</time>
-					</div>
-					<div
-						className={cn(
-							'chat-bubble shadow-sm rounded-xl',
-							message.senderId === user.id
-								? 'bg-periBlue'
-								: 'chat-bubble-primary'
-						)}
-					>
-						{message.message}
-					</div>
-					{!message.groupId && message.senderId === user.id && (
-						<div className='chat-footer'>
-							<CheckCheck className='size-4 mt-0.5 text-periBlue/70' />
+							<div
+								className={cn(
+									'size-full max-w-[90%]',
+									message.senderId === user.id
+										? 'col-start-1 justify-items-end'
+										: 'col-start-2'
+								)}
+							>
+								<div
+									className={cn(
+										'chat-bubble max-w-full shadow-sm rounded-xl before:size-0',
+										message.senderId === user.id
+											? 'bg-periBlue text-secondary'
+											: 'chat-bubble-primary',
+										message.attachments && !message.message
+											? 'hidden'
+											: ''
+									)}
+								>
+									<p>{message.message}</p>
+								</div>
+								{displayableAttachments &&
+									displayableAttachments.length > 0 && (
+										<div
+											className={cn(
+												'mt-1 grid w-fit',
+												displayableAttachments.length >
+													1
+													? 'grid-cols-2 mobile:grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 justify-end gap-3'
+													: 'grid-cols-1'
+												// message.senderId === user.id ? " [direction:rtl]"
+											)}
+										>
+											<MessageAttachment
+												attachments={
+													displayableAttachments as ServerAttachment[]
+												}
+												senderIsUser={
+													message.senderId === user.id
+												}
+												onAttachmentClick={(
+													index: number
+												) =>
+													onAttachmentClick(
+														displayableAttachments as ServerAttachment[],
+														index
+													)
+												}
+											/>
+										</div>
+									)}
+								{unDisplayableAttachments &&
+									unDisplayableAttachments.length > 0 && (
+										<div
+											className={cn('mt-1 grid gap-y-2')}
+										>
+											<MessageAttachment
+												senderIsUser={
+													message.senderId === user.id
+												}
+												attachments={
+													unDisplayableAttachments as ServerAttachment[]
+												}
+												hasText={hasText}
+											/>
+										</div>
+									)}
+							</div>
 						</div>
-					)}
-				</div>
-			))}
-		</div>
+					);
+				})}
+			</div>
+		</>
 	);
 };
 

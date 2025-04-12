@@ -1,9 +1,17 @@
 import { ConversationTypeEnum } from '@/enums/ConversationTypeEnum';
-import { Textarea } from '@headlessui/react';
+import { cn } from '@/utils/utils';
+import {
+	Popover,
+	PopoverButton,
+	PopoverPanel,
+	Textarea,
+} from '@headlessui/react';
 import { DocumentIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import axios, { AxiosError } from 'axios';
+import EmojiPicker from 'emoji-picker-react';
 import { Plus, Send, Smile } from 'lucide-react';
 import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import PresendPreview from './attachment/PresendPreview';
 
 const ConversationInput = ({
 	conversation,
@@ -13,13 +21,20 @@ const ConversationInput = ({
 	const input = useRef<HTMLTextAreaElement>();
 	const [value, setvalue] = useState('');
 	const [sending, setSending] = useState(false);
+	const [files, setFiles] = useState<Attachment[]>([]);
+	const [uploadProgress, setUploadProgress] = useState(0);
 
 	const sendMessage = async () => {
 		if (sending) return;
 
-		if (value.trim() !== '') {
+		if (value.trim() !== '' || files.length > 0) {
 			const formData = new FormData();
+
+			files.forEach((file) =>
+				formData.append('attachments[]', file.file)
+			);
 			formData.append('message', value);
+
 			if (conversation.type === ConversationTypeEnum.PRIVATE) {
 				formData.append('receiver_id', `${conversation.id}`);
 			} else if (conversation.type === ConversationTypeEnum.GROUP) {
@@ -37,14 +52,17 @@ const ConversationInput = ({
 									100
 							);
 							console.log('progress: ', progress);
+							setUploadProgress(progress);
 						}
 					},
 				});
 
-				// console.log(res);
 				setvalue('');
 				setSending(false);
+				setUploadProgress(0);
+				setFiles([]);
 			} catch (err) {
+				setFiles([]);
 				if (err instanceof AxiosError) {
 					console.log(err.response?.data);
 				}
@@ -71,6 +89,31 @@ const ConversationInput = ({
 		setvalue(e.target.value);
 	};
 
+	const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const selectedFiles = e.target.files;
+
+		if (!selectedFiles) return;
+
+		const updatedFiles = [...selectedFiles].map((file) => {
+			return {
+				file,
+				url: URL.createObjectURL(file),
+			};
+		});
+
+		setFiles((prev) => [...prev, ...updatedFiles]);
+	};
+
+	const removeFile = (name: string) => {
+		setFiles((prevFiles) => {
+			const fileToRemove = prevFiles.find((f) => f.file.name === name);
+			if (fileToRemove) {
+				URL.revokeObjectURL(fileToRemove.url); // Clean up URL
+			}
+			return prevFiles.filter((f) => f.file.name !== name);
+		});
+	};
+
 	const adjustHeight = () => {
 		setTimeout(() => {
 			if (input.current) {
@@ -89,63 +132,97 @@ const ConversationInput = ({
 	}, [conversation]);
 
 	return (
-		<div className='flex items-center gap-x-2 p-4'>
-			<div className='flex-1  relative rounded-full'>
-				<Smile className='absolute left-3 top-1/2 -translate-y-1/2 size-5 cursor-pointer' />
-				<Textarea
-					ref={input as React.Ref<HTMLTextAreaElement>}
-					rows={1}
-					autoFocus
-					value={value}
-					onKeyDown={(e) => handleKeyDown(e as any)}
-					onChange={(e) => handleChange(e)}
-					placeholder='Write a message'
-					className='bg-transparent max-h-20 w-[90%] border-none focus:ring-0 float-right resize-none custom-scrollbar'
-				/>
-			</div>
+		<div className={cn('flex flex-col transition duration-500')}>
+			{/* {!uploadProgress && (
+				<progress
+					className='progress progress-info w-56'
+					value={uploadProgress}
+					max='100'
+				></progress>
+			)} */}
 
-			<div className='dropdown dropdown-top dropdown-left'>
-				<div
-					tabIndex={0}
-					className='size-10 flex items-center justify-center border border-secondary-content rounded-full cursor-pointer'
-				>
-					<Plus className='size-4' />
+			{files.length > 0 && (
+				<PresendPreview files={files} removeFile={removeFile} />
+			)}
+
+			<div className='flex items-center gap-x-2 p-4'>
+				<div className='flex-1 flex rounded-full'>
+					<Popover className='relative flex-1'>
+						<PopoverButton>
+							<Smile className='absolute left-3 top-1/2 -translate-y-1/2 size-5 cursor-pointer' />
+						</PopoverButton>
+						<PopoverPanel
+							transition
+							// anchor='bottom'
+							className='absolute z-10 bottom-[110%] left-0 transition duration-200 ease-in-out'
+						>
+							<EmojiPicker
+								lazyLoadEmojis
+								previewConfig={{ showPreview: false }}
+								onEmojiClick={(ev) =>
+									setvalue(value + ev.emoji)
+								}
+							/>
+						</PopoverPanel>
+					</Popover>
+					<Textarea
+						ref={input as React.Ref<HTMLTextAreaElement>}
+						rows={1}
+						autoFocus
+						value={value}
+						onKeyDown={(e) => handleKeyDown(e as any)}
+						onChange={(e) => handleChange(e)}
+						placeholder='Write a message'
+						className='bg-transparent max-h-20 w-[90%] border-none focus:ring-0 float-right resize-none custom-scrollbar'
+					/>
 				</div>
-				<ul
-					tabIndex={0}
-					className='dropdown-content menu bg-primary rounded-box z-2 w-[220px] p-1 !px-0 shadow translate-x-1/3 -translate-y-2'
+
+				<div className='dropdown dropdown-top dropdown-left'>
+					<div
+						tabIndex={0}
+						className='size-10 flex items-center justify-center border border-secondary-content rounded-full cursor-pointer'
+					>
+						<Plus className='size-4' />
+					</div>
+					<ul
+						tabIndex={0}
+						className='dropdown-content menu bg-primary rounded-box z-2 w-[220px] p-1 !px-0 shadow translate-x-1/3 -translate-y-2'
+					>
+						<li className='relative hover:bg-secondary/50'>
+							<div className='flex items-center gap-x-2'>
+								<PhotoIcon className='size-5 text-primary-content' />
+								<p className='text-base'>Photos and Videos</p>
+							</div>
+							<input
+								type='file'
+								multiple
+								accept='image/*, video/*'
+								onChange={handleFileChange}
+								className='absolute top-0 bottom-0 right-0 left-0 z-20 opacity-0 p-0'
+							/>
+						</li>
+						<li className='relative hover:bg-secondary/50'>
+							<input
+								type='file'
+								multiple
+								onChange={handleFileChange}
+								className='absolute top-0 bottom-0 right-0 left-0 z-20 opacity-0'
+							/>
+							<div className='flex items-center gap-x-2'>
+								<DocumentIcon className='size-5 text-primary-content' />
+								<p className='text-base'>Documents</p>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<button
+					disabled={value.trim() === '' && files.length === 0}
+					onClick={sendMessage}
+					className='size-10 flex items-center justify-center bg-periBlue disabled:bg-periBlue/50 rounded-full cursor-pointer disabled:cursor-auto'
 				>
-					<li className='relative hover:bg-secondary/50'>
-						<div className='flex items-center gap-x-2'>
-							<PhotoIcon className='size-5 text-primary-content' />
-							<p className='text-base'>Photos and Videos</p>
-						</div>
-						<input
-							type='file'
-							multiple
-							className='absolute top-0 bottom-0 right-0 left-0 z-20 opacity-0 p-0'
-						/>
-					</li>
-					<li className='relative hover:bg-secondary/50'>
-						<input
-							type='file'
-							multiple
-							className='absolute top-0 bottom-0 right-0 left-0 z-20 opacity-0'
-						/>
-						<div className='flex items-center gap-x-2'>
-							<DocumentIcon className='size-5 text-primary-content' />
-							<p className='text-base'>Documents</p>
-						</div>
-					</li>
-				</ul>
+					<Send className='size-4 text-primary' />
+				</button>
 			</div>
-			<button
-				disabled={value.trim() === ''}
-				onClick={sendMessage}
-				className='size-10 flex items-center justify-center bg-periBlue disabled:bg-periBlue/50 rounded-full cursor-pointer disabled:cursor-auto'
-			>
-				<Send className='size-4 text-primary' />
-			</button>
 		</div>
 	);
 };

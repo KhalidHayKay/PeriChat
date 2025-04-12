@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
@@ -15,6 +16,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/message', [MessageController::class, 'destroy'])->name('message.destroy');
 
     Route::get('/message/older/{message}', [MessageController::class, 'loadOlder'])->name('message.loadOlder');
+
+    Route::post('/message/unread/{message}', [ConversationController::class, 'incrementUnread'])->name('message.incrementUnread');
+    Route::post('/message/read/{message}', [ConversationController::class, 'markRead'])->name('message.markRead');
 });
 
 Route::middleware('auth')->group(function () {
