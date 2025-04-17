@@ -7,6 +7,7 @@ import {
 } from '@/actions/file-check';
 import { capitalize, cn } from '@/utils/utils';
 import { Download, File, PlayCircleIcon } from 'lucide-react';
+import { Fragment } from 'react/jsx-runtime';
 import { AudioPlayer } from './AudioPlayer';
 
 const MessageAttachment = ({
@@ -21,13 +22,11 @@ const MessageAttachment = ({
 	onAttachmentClick?: (index: number) => void;
 }) => {
 	return attachments.map((attachment, i) => (
-		<>
+		<Fragment key={attachment.id ?? i}>
 			{isImage(attachment) && (
 				<div
-					key={attachment.id ?? i}
 					onClick={() => {
 						onAttachmentClick && onAttachmentClick(i);
-						console.log(attachment.id);
 					}}
 					className='size-[90px] mobile:size-[110px] md:size-[130px] lg:size-[150px] shadow-md hover:shadow-lg rounded-md overflow-hidden cursor-pointer message-image-hover-effect'
 				>
@@ -40,7 +39,6 @@ const MessageAttachment = ({
 
 			{isVideo(attachment) && (
 				<div
-					key={attachment.id ?? i}
 					onClick={() => onAttachmentClick && onAttachmentClick(i)}
 					className='relative size-[90px] mobile:size-[110px] md:size-[130px] lg:size-[150px] shadow-md hover:shadow-lg rounded-md overflow-hidden cursor-pointer message-image-hover-effect'
 				>
@@ -55,7 +53,7 @@ const MessageAttachment = ({
 			)}
 
 			{isAudio(attachment) && (
-				<div key={attachment.id ?? i} className='w-full max-w-md'>
+				<div className='w-full max-w-md'>
 					<AudioPlayer
 						file={attachment}
 						senderIsUser={senderIsUser}
@@ -66,7 +64,6 @@ const MessageAttachment = ({
 
 			{isAppFile(attachment) && (
 				<div
-					key={attachment.id ?? i}
 					className={cn(
 						'w-[300px] flex items-center p-3 rounded-lg border shadow-sm transition-colors',
 						senderIsUser
@@ -138,7 +135,7 @@ const MessageAttachment = ({
 					</button>
 				</div>
 			)}
-		</>
+		</Fragment>
 	));
 };
 

@@ -192,9 +192,9 @@ const ConversationMessages = ({
 							</div>
 							<div
 								className={cn(
-									'size-full max-w-[90%]',
+									'size-full max-w-[90%] flex flex-col',
 									message.senderId === user.id
-										? 'col-start-1 justify-items-end'
+										? 'col-start-1 items-end'
 										: 'col-start-2'
 								)}
 							>
@@ -219,8 +219,10 @@ const ConversationMessages = ({
 												displayableAttachments.length >
 													1
 													? 'grid-cols-2 mobile:grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 justify-end gap-3'
-													: 'grid-cols-1'
-												// message.senderId === user.id ? " [direction:rtl]"
+													: 'grid-cols-1',
+												message.senderId === user.id
+													? ' [direction:rtl]'
+													: '[direction:ltr]'
 											)}
 										>
 											<MessageAttachment

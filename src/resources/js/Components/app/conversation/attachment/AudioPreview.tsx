@@ -58,7 +58,7 @@ const AudioPreview = ({ file }: { file: Attachment }) => {
 
 			{/* Waveform visualization (simplified) */}
 			<div className='w-full h-16 flex items-center justify-center mb-4'>
-				<div className='w-full h-12 bg-gray-200 rounded-lg relative overflow-hidden'>
+				<div className='w-full h-5 bg-gray-200 rounded-lg relative overflow-hidden'>
 					{/* Progress bar */}
 					<div
 						className='absolute top-0 left-0 h-full bg-blue-500 rounded-l-lg'

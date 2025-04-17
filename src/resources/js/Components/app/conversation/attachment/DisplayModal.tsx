@@ -16,25 +16,8 @@ interface DisplayModalProps {
 }
 
 const DisplayModal = ({ data, onClose }: DisplayModalProps) => {
-	if (!data) return null;
-
 	const [currentIndex, setCurrentIndex] = useState(data?.index ?? 0);
 
-	const current = data.attachments[currentIndex];
-
-	const prev = () => {
-		setCurrentIndex((prev) =>
-			prev === 0 ? data.attachments.length - 1 : prev - 1
-		);
-	};
-
-	const next = () => {
-		setCurrentIndex((prev) =>
-			prev === data.attachments.length - 1 ? 0 : prev + 1
-		);
-	};
-
-	// Prevent scrolling when modal is open
 	useEffect(() => {
 		if (data) {
 			document.body.style.overflow = 'hidden';
@@ -52,6 +35,21 @@ const DisplayModal = ({ data, onClose }: DisplayModalProps) => {
 		setCurrentIndex(data?.index ?? 0);
 	}, [data]);
 
+	if (!data) return null;
+
+	const current = data.attachments[currentIndex];
+
+	const prev = () => {
+		setCurrentIndex((prev) =>
+			prev === 0 ? data.attachments.length - 1 : prev - 1
+		);
+	};
+
+	const next = () => {
+		setCurrentIndex((prev) =>
+			prev === data.attachments.length - 1 ? 0 : prev + 1
+		);
+	};
 	return (
 		<div className='absolute inset-0 z-50 flex items-center justify-center'>
 			{/* Backdrop */}

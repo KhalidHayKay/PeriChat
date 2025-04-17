@@ -91,6 +91,7 @@ const ConversationInput = ({
 
 	const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const selectedFiles = e.target.files;
+		console.log('selectedFiles: ', selectedFiles);
 
 		if (!selectedFiles) return;
 
@@ -165,6 +166,7 @@ const ConversationInput = ({
 							/>
 						</PopoverPanel>
 					</Popover>
+
 					<Textarea
 						ref={input as React.Ref<HTMLTextAreaElement>}
 						rows={1}
