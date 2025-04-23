@@ -1,5 +1,5 @@
 import FormatChatDate from '@/actions/format-chat-date';
-import { ConversationTypeEnum } from '@/enums/ConversationTypeEnum';
+import { ConversationTypeEnum } from '@/enums/enums';
 import { cn } from '@/utils/utils';
 import { Link } from '@inertiajs/react';
 import { CheckCheck } from 'lucide-react';

@@ -1,8 +1,8 @@
 import Avatar from '@/Components/app/Avatar';
 import useOnlineUsers from '@/context/OnlineUsers';
-import { ConversationTypeEnum } from '@/enums/ConversationTypeEnum';
+import { ConversationTypeEnum } from '@/enums/enums';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, EllipsisVertical, Phone, VideoIcon } from 'lucide-react';
+import { ChevronLeft, EllipsisVertical, Phone, VideoIcon } from 'lucide-react';
 
 const ConversationHeader = ({
 	selectedConversation,
@@ -26,8 +26,8 @@ const ConversationHeader = ({
 	return (
 		<div className='p-4 flex items-center justify-between'>
 			<div className='flex items-center gap-x-2'>
-				<Link href={'/'} className='mr-2'>
-					<ArrowLeft className='size-7' />
+				<Link href={'/'}>
+					<ChevronLeft className='size-6' />
 				</Link>
 				<Avatar
 					avatarUrl={selectedConversation.avatar}

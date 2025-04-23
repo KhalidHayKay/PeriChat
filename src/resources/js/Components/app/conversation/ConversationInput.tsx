@@ -1,4 +1,4 @@
-import { ConversationTypeEnum } from '@/enums/ConversationTypeEnum';
+import { ConversationTypeEnum } from '@/enums/enums';
 import { cn } from '@/utils/utils';
 import {
 	Popover,

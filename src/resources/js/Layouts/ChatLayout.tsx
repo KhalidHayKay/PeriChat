@@ -1,15 +1,15 @@
 import SortConversation from '@/actions/sort-conversation';
-import Avatar from '@/Components/app/Avatar';
 import ConversationItem from '@/Components/app/conversation/ConversationItem';
+import ConversationSearch from '@/Components/app/ConversationSearch';
 import useEventBus from '@/context/EventBus';
 import useOnlineUsers from '@/context/OnlineUsers';
-import { ConversationTypeEnum } from '@/enums/ConversationTypeEnum';
+import { ConversationTypeEnum } from '@/enums/enums';
 import { cn } from '@/utils/utils';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { Button } from '@headlessui/react';
 import { usePage } from '@inertiajs/react';
 import axios from 'axios';
-import { MessageSquareTextIcon } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { PenBox } from 'lucide-react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 
 const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 	const props = usePage().props;
@@ -20,13 +20,20 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 	const [localConversation, setLocalConversation] = useState<Conversation[]>(
 		[]
 	);
-	// console.log(localConversation);
 	const [sortedConversation, setSortedConversation] = useState<
 		Conversation[]
 	>([]);
+	const [filter, setFilter] = useState<'all' | 'private' | 'group'>('all');
+	const [searchText, setSearchText] = useState('');
 
 	const { emit, on } = useEventBus();
 	const { checkIfUserIsOnline } = useOnlineUsers();
+
+	const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+		const text = e.target.value;
+
+		setSearchText(text);
+	};
 
 	const incrementUnreadCount = (id: number) => {
 		axios
@@ -79,12 +86,30 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 	}, [on]);
 
 	useEffect(() => {
-		setSortedConversation(SortConversation(localConversation));
-	}, [localConversation]);
+		// Start with the original conversations
+		let filteredConversations = [...conversations];
+
+		// Apply type filter if it's not 'all'
+		if (filter !== 'all') {
+			filteredConversations = filteredConversations.filter(
+				(c) => c.type === filter.toLowerCase()
+			);
+		}
+
+		// Then apply search filter if there's search text
+		if (searchText !== '') {
+			filteredConversations = filteredConversations.filter((c) =>
+				c.name.toLowerCase().includes(searchText.toLowerCase())
+			);
+		}
+
+		// Update state with the filtered results
+		setLocalConversation(filteredConversations);
+	}, [filter, searchText, conversations]);
 
 	useEffect(() => {
-		setLocalConversation(conversations);
-	}, [conversations]);
+		setSortedConversation(SortConversation(localConversation));
+	}, [localConversation]);
 
 	useEffect(() => {
 		conversations.forEach((conversation) => {
@@ -163,83 +188,79 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 					)}
 				>
 					<header className='px-4 mobile:px-10 sm:px-4 space-y-5'>
-						<div className='flex items-center justify-between'>
-							<div className='flex items-center gap-x-2'>
-								<Avatar
-									avatarUrl={user.avatar ?? null}
-									online={checkIfUserIsOnline(user.id)}
-									isProfile={true}
-								/>
-								<div className=''>
-									<h1 className='text-lg font-semibold'>
-										{user.name}
-									</h1>
-									<p className='text-primary-content'>
-										Account info
-									</p>
-								</div>
-							</div>
-							<div>
-								<MagnifyingGlassIcon className='size-7 text-secondary-content' />
-							</div>
-						</div>
+						<ConversationSearch
+							user={user}
+							online={checkIfUserIsOnline(user.id)}
+							search={{ text: searchText, set: setSearchText, handler: handleSearch }}
+						/>
+
 						<div className='grid grid-cols-3 bg-secondary rounded-full p-2 font-semibold text-secondary-content'>
-							<button className='rounded-full py-1.5 bg-primary shadow-sm text-periBlue'>
+							<button
+								onClick={() => setFilter('all')}
+								className={cn(
+									'rounded-full py-1.5',
+									filter === 'all'
+										? 'bg-primary shadow-sm text-periBlue'
+										: 'bg-transparent text-primary-content shadow-none'
+								)}
+							>
 								All
 							</button>
-							<button className='rounded-full py-1.5'>
-								Personal
+							<button
+								onClick={() => setFilter('private')}
+								className={cn(
+									'rounded-full py-1.5',
+									filter === 'private'
+										? 'bg-primary shadow-sm text-periBlue'
+										: 'bg-transparent text-primary-content shadow-none'
+								)}
+							>
+								Private
 							</button>
-							<button className='rounded-full py-1.5'>
+							<button
+								onClick={() => setFilter('group')}
+								className={cn(
+									'rounded-full py-1.5',
+									filter === 'group'
+										? 'bg-primary shadow-sm text-periBlue'
+										: 'bg-transparent text-primary-content shadow-none'
+								)}
+							>
 								Group
 							</button>
 						</div>
 					</header>
 
-					<div className='max-h-[calc(100%-135px)] overflow-y-auto custom-scrollbar'>
-						<div className='space-y-5 pl-1 mobile:px-5 sm:pl-1 sm:pr-0'>
-							{/* <div>
-								<div className='flex items-center justify-between mb-5'>
-									<h2 className='text-secondary-content font-semibold ml-1'>
-										Pinned Messages
-									</h2>
-									<Pin className='size-5' />
-								</div>
-								<div className='space-y-5'>
-									<ChatItem />
-								</div>
-							</div> */}
-							<div>
-								<div className='flex items-center justify-between mb-3 px-3 mobile:px-5 sm:px-3'>
-									<h2 className='text-secondary-content font-semibold ml-1'>
-										Messages
-									</h2>
-									<MessageSquareTextIcon className='size-5' />
-								</div>
-								<div className='space-y-1'>
-									{sortedConversation.map((conversation) => (
-										<ConversationItem
-											key={
-												`${conversation.type === ConversationTypeEnum.GROUP ? 'group_' : 'user_'}` +
-												conversation.id
-											}
-											user={user}
-											conversation={conversation}
-											online={
-												conversation.type ===
-												ConversationTypeEnum.PRIVATE
-													? checkIfUserIsOnline(
-															conversation.id
-														)
-													: undefined
-											}
-											selectedConversation={
-												selectedConversation
-											}
-										/>
-									))}
-								</div>
-							</div>
+					<div className='max-h-[calc(100%-135px)] pl-1 mobile:px-5 sm:pl-1 sm:pr-0 overflow-y-auto custom-scrollbar'>
+						<div className='flex items-center justify-between mb-3 px-3 mobile:px-5 sm:px-3'>
+							<h2 className='text-secondary-content font-semibold ml-1'>
+								Messages
+							</h2>
+
+							<Button>
+								<PenBox className='size-5' />
+							</Button>
+						</div>
+						<div className='space-y-1'>
+							{sortedConversation.map((conversation) => (
+								<ConversationItem
+									key={
+										`${conversation.type === ConversationTypeEnum.GROUP ? 'group_' : 'user_'}` +
+										conversation.id
+									}
+									user={user}
+									conversation={conversation}
+									online={
+										conversation.type ===
+										ConversationTypeEnum.PRIVATE
+											? checkIfUserIsOnline(
+													conversation.id
+												)
+											: undefined
+									}
+									selectedConversation={selectedConversation}
+								/>
+							))}
 						</div>
 					</div>
 				</aside>

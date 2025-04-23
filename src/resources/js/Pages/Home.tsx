@@ -2,7 +2,7 @@ import ConversationHeader from '@/Components/app/conversation/ConversationHeader
 import ConversationInput from '@/Components/app/conversation/ConversationInput';
 import ConversationMessages from '@/Components/app/conversation/ConversationMessages';
 import useEventBus from '@/context/EventBus';
-import { ConversationTypeEnum } from '@/enums/ConversationTypeEnum';
+import { ConversationTypeEnum } from '@/enums/enums';
 import Authenticated from '@/Layouts/AuthenticatedLayout';
 import ChatLayout from '@/Layouts/ChatLayout';
 import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
