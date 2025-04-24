@@ -71,31 +71,6 @@ class User extends Authenticatable
         return $this->hasMany(Message::class);
     }
 
-    // public static function getUsersExceptUser(User $user): Collection
-    // {
-    //     $query = self::select(['users.*', 'messages.message as last_message', 'messages.created_at as last_message_date'])
-    //         ->where('users.id', '!=', $user->id)
-    //         ->when(! $user->is_admin, function (Builder $q) {
-    //             $q->whereNull('users.blocked_at');
-    //         })
-    //         ->leftJoin('conversations', function (JoinClause $join) use ($user) {
-    //             $join->on('conversations.user1_id', '=', 'users.id')
-    //                 ->where('conversations.user2_id', '=', $user->id)
-    //                 ->orWhere(function (JoinClause $join) use ($user) {
-    //                     $join->on('conversations.user2_id', '=', 'users.id')
-    //                         ->where('conversations.user1_id', '=', $user->id);
-    //                 });
-    //         })
-    //         ->leftJoin('messages', 'messages.id', '=', 'conversations.last_message_id')
-    //         ->orderByRaw('IFNULL(users.blocked_at, 1)')
-    //         ->orderBy('messages.created_at', 'desc')
-    //         ->orderBy('users.name')
-    //     ;
-
-    //     // dd($query->toSql());
-    //     return $query->get();
-    // }
-
     public static function getUsersExceptUser(User $user): Collection
     {
         $query = User::select([

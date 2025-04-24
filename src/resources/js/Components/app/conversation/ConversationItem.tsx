@@ -63,7 +63,7 @@ const ConversationItem = ({
 							''
 						)
 					) : (
-						<CheckCheck className='size-4 mt-0.5 text-periBlue/70' />
+						<CheckCheck className='size-4 mt-0.5 text-secondary-content' />
 					)}
 				</div>
 			</div>

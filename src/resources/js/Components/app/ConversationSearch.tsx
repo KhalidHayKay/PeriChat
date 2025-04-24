@@ -48,10 +48,10 @@ const ConversationSearch = ({
 					<h1 className='text-lg font-semibold'>{user.name}</h1>
 					<p className='text-primary-content'>
 						<Link
-							href={route('profile.edit')}
+							href={route('account.profile')}
 							className='text-primary-content hover:underline'
 						>
-							Account info
+							Account
 						</Link>
 					</p>
 				</div>

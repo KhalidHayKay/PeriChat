@@ -85,7 +85,7 @@ const ConversationMessages = ({
 	// 		}
 	// 	};
 
-	// 	resetUnread();
+	// 	messages[messages.length - 1].receiverId && resetUnread();
 	// }, [selectedConversation]);
 
 	useEffect(() => {

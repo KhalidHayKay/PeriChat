@@ -7,7 +7,6 @@ import { ConversationTypeEnum } from '@/enums/enums';
 import { cn } from '@/utils/utils';
 import { Button } from '@headlessui/react';
 import { usePage } from '@inertiajs/react';
-import axios from 'axios';
 import { PenBox } from 'lucide-react';
 import React, { ChangeEvent, useEffect, useState } from 'react';
 
@@ -35,11 +34,11 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 		setSearchText(text);
 	};
 
-	const incrementUnreadCount = (id: number) => {
-		axios
-			.post(route('message.incrementUnread', id))
-			.catch((err) => console.error(err));
-	};
+	// const incrementUnreadCount = (id: number) => {
+	// 	axios
+	// 		.post(route('message.incrementUnread', id))
+	// 		.catch((err) => console.error(err));
+	// };
 
 	const messageCreated = (message: Message) => {
 		setLocalConversation((prev) => {
@@ -52,13 +51,13 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 					c.lastMessage = message.message;
 					c.lastMessageDate = message.createdAt;
 
-					if (
-						// !selectedConversation ||
-						selectedConversation?.id !== message.senderId
-					) {
-						const count = c.unreadMessageCount++;
-						incrementUnreadCount(message.id);
-					}
+					// if (
+					// 	!selectedConversation ||
+					// 	selectedConversation?.id !== message.senderId
+					// ) {
+					// 	const count = c.unreadMessageCount++;
+					// 	incrementUnreadCount(message.id);
+					// }
 
 					return c;
 				}
@@ -86,24 +85,20 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 	}, [on]);
 
 	useEffect(() => {
-		// Start with the original conversations
 		let filteredConversations = [...conversations];
 
-		// Apply type filter if it's not 'all'
 		if (filter !== 'all') {
 			filteredConversations = filteredConversations.filter(
 				(c) => c.type === filter.toLowerCase()
 			);
 		}
 
-		// Then apply search filter if there's search text
 		if (searchText !== '') {
 			filteredConversations = filteredConversations.filter((c) =>
 				c.name.toLowerCase().includes(searchText.toLowerCase())
 			);
 		}
 
-		// Update state with the filtered results
 		setLocalConversation(filteredConversations);
 	}, [filter, searchText, conversations]);
 
@@ -191,7 +186,11 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 						<ConversationSearch
 							user={user}
 							online={checkIfUserIsOnline(user.id)}
-							search={{ text: searchText, set: setSearchText, handler: handleSearch }}
+							search={{
+								text: searchText,
+								set: setSearchText,
+								handler: handleSearch,
+							}}
 						/>
 
 						<div className='grid grid-cols-3 bg-secondary rounded-full p-2 font-semibold text-secondary-content'>
