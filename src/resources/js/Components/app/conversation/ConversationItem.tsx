@@ -20,15 +20,15 @@ const ConversationItem = ({
 		<Link
 			href={
 				conversation.type === ConversationTypeEnum.GROUP
-					? route('conversation.group', conversation as any)
-					: route('conversation.private', conversation as any)
+					? route('conversation.group', conversation.typeId)
+					: route('conversation.private', conversation.typeId)
 			}
 			preserveState
 			className={cn(
 				'flex items-center gap-x-3 sm:gap-x-1 py-2 px-3 mobile:px-5 sm:px-3 rounded-md cursor-pointer transition',
 				'hover:bg-secondary/90',
 				selectedConversation?.type === conversation.type &&
-					selectedConversation?.id === conversation.id &&
+					selectedConversation?.typeId === conversation.typeId &&
 					'bg-secondary/90'
 			)}
 		>
@@ -54,16 +54,14 @@ const ConversationItem = ({
 						{conversation.lastMessage ?? 'No message'}
 					</p>
 
-					{conversation.lastMessageSenderId !== user.id ? (
-						conversation.unreadMessageCount !== 0 ? (
+					{conversation.lastMessageSenderId === user.id ? (
+						<CheckCheck className='size-4 mt-0.5 text-secondary-content' />
+					) : (
+						conversation.unreadMessageCount !== 0 && (
 							<span className='bg-periRed text-white text-xs size-4 rounded-full flex item-center justify-center'>
 								{conversation.unreadMessageCount}
 							</span>
-						) : (
-							''
 						)
-					) : (
-						<CheckCheck className='size-4 mt-0.5 text-secondary-content' />
 					)}
 				</div>
 			</div>

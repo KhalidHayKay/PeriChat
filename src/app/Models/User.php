@@ -97,28 +97,33 @@ class User extends Authenticatable
         return $query->get();
     }
 
-    public function getUnreadCount()
+    public function getUnreadCount(?int $conversationId)
     {
+        if (! $conversationId && ! $this->c_id) {
+            return null;
+        }
+
         $query = DB::table('user_conversation')
             ->select('unread_messages_count')
-            ->where('conversation_id', $this->c_id)
+            ->where('conversation_id', $this->c_id ?: $conversationId)
             ->where('user_id', Auth::id())
         ;
 
         return $query->first()?->unread_messages_count;
     }
 
-    public function toConversationArray(): array
+    public function toConversationArray(?int $conversationId = null): array
     {
         return [
-            'id'                  => $this->id,
+            'id'                  => $this->c_id ?? $conversationId,
             'name'                => $this->name,
             'avatar'              => $this->avatar,
             'type'                => ConversationTypeEnum::PRIVATE ->value,
+            'typeId'              => $this->id,
             'lastMessage'         => $this->last_message,
             'lastMessageSenderId' => $this->last_message_sender,
             'lastMessageDate'     => $this->last_message_date ? Carbon::parse($this->last_message_date)->setTimezone('UTC')->toIso8601String() : null,
-            'unreadMessageCount'  => $this->getUnreadCount(),
+            'unreadMessageCount'  => $this->getUnreadCount($conversationId),
         ];
     }
 }

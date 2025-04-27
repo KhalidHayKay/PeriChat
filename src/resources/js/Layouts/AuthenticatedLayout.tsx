@@ -1,3 +1,4 @@
+import Toast from '@/Components/app/Toast';
 import { EventBusProvider } from '@/context/EventBus';
 import { OnlineUsersProvider } from '@/context/OnlineUsers';
 import { Head } from '@inertiajs/react';
@@ -10,6 +11,7 @@ export default function Authenticated({ children }: PropsWithChildren) {
 			<OnlineUsersProvider>
 				<Head title='Home' />
 				<div className='min-h-screen bg-secondary'>{children}</div>
+				<Toast />
 			</OnlineUsersProvider>
 		</EventBusProvider>
 	);

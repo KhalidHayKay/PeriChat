@@ -27,7 +27,7 @@ const Home = ({
 		if (
 			selectedConversation &&
 			selectedConversation.type === ConversationTypeEnum.GROUP &&
-			selectedConversation.id === message.groupId
+			selectedConversation.typeId === message.groupId
 		) {
 			setLocalMessages((prev) => [...prev, message]);
 		}
@@ -36,8 +36,8 @@ const Home = ({
 			selectedConversation &&
 			selectedConversation.type === ConversationTypeEnum.PRIVATE &&
 			!message.groupId &&
-			(selectedConversation.id === message.senderId ||
-				selectedConversation.id === message.receiverId)
+			(selectedConversation.typeId === message.senderId ||
+				selectedConversation.typeId === message.receiverId)
 		) {
 			setLocalMessages((prev) => [...prev, message]);
 		}

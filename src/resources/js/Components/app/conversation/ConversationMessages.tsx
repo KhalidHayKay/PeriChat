@@ -1,4 +1,5 @@
 import { isImage, isVideo } from '@/actions/file-check';
+import useEventBus from '@/context/EventBus';
 import { cn } from '@/utils/utils';
 import axios, { AxiosError } from 'axios';
 import { format } from 'date-fns';
@@ -26,6 +27,8 @@ const ConversationMessages = ({
 		attachments: ServerAttachment[];
 		index: number;
 	} | null>(null);
+
+	const { emit } = useEventBus();
 
 	const loadOlderMessages = useCallback(async () => {
 		// if (noOlderMessages) {
@@ -74,19 +77,11 @@ const ConversationMessages = ({
 		setViewData({ attachments, index });
 	};
 
-	// useEffect(() => {
-	// 	const resetUnread = async () => {
-	// 		try {
-	// 			const res = await axios.post(
-	// 				route('message.markRead', messages[messages.length - 1].id)
-	// 			);
-	// 		} catch (error) {
-	// 			console.log(error);
-	// 		}
-	// 	};
-
-	// 	messages[messages.length - 1].receiverId && resetUnread();
-	// }, [selectedConversation]);
+	if (selectedConversation.unreadMessageCount > 0) {
+		setTimeout(() => {
+			emit('unread.reset', selectedConversation);
+		}, 0);
+	}
 
 	useEffect(() => {
 		setTimeout(() => {
@@ -99,6 +94,8 @@ const ConversationMessages = ({
 		setScrollFromBottom(0);
 		setNoOlderMessages(false);
 	}, [selectedConversation]);
+
+	console.log(selectedConversation);
 
 	useEffect(() => {
 		if (conversationCtrRef.current) {

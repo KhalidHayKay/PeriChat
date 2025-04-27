@@ -3,49 +3,41 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ConversationTypeEnum;
+use App\Models\Conversation;
 use App\Models\Message;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class ConversationController extends Controller
 {
-    public function markRead(Message $message)
+    public function markRead(Conversation $conversation)
     {
-        $conversation = ($message->conversation->type === ConversationTypeEnum::PRIVATE ->value) ?
-            DB::table('user_conversation')
-                ->where('conversation_id', $message->conversation_id)
-                ->where('user_id', Auth::id())
-            :
-            DB::table('group_users')
-                ->where('group_id', $message->conversation->group_id)
-                ->where('user_id', Auth::id())
-        ;
+        $updated = $this->getConversationUserRelationship($conversation)
+            ->updateExistingPivot(Auth::id(), ['unread_messages_count' => 0,]);
 
-        $affectedRows = $conversation->update(['unread_messages_count' => 0]);
+        if ($updated) {
+            return response(['message' => 'Unread count reset successfully']);
+        }
 
-        return $affectedRows
-            ? response()->json(['message' => 'Unread count reset successfully'], 200)
-            : response()->json(['message' => 'No unread messages found or reset failed'], 400);
+        return response(['message' => 'No unread count to reset or update failed']);
     }
 
     public function incrementUnread(Message $message)
     {
-        if ($message->conversation->type === ConversationTypeEnum::PRIVATE ->value) {
-            $q = DB::table('user_conversation')
-                ->where('conversation_id', $message->conversation_id)
-                ->where('user_id', Auth::id())
-                ->where('user_id', '!=', $message->sender_id)
-                ->increment('unread_messages_count')
-            ;
-        } else {
-            DB::table('group_user')
-                ->where('group_id', $message->conversation->group_id)
-                ->where('user_id', Auth::id())
-                ->where('user_id', '!=', $message->sender_id)
-                ->increment('unread_messages_count')
-            ;
+        $affected = $this->getConversationUserRelationship($message->conversation)
+            ->where('user_id', Auth::id())->increment('unread_messages_count');
+
+        if ($affected > 0) {
+            return response(['message' => 'Unread count incremented successfully']);
         }
 
-        return response(['message' => 'unread count incremented successfully']);
+        return response(['message' => 'Unread count not updated or already up-to-date']);
     }
+
+    private function getConversationUserRelationship(Conversation $conversation)
+    {
+        return ConversationTypeEnum::isPrivate($conversation)
+            ? $conversation->users()
+            : $conversation->group->users();
+    }
+
 }

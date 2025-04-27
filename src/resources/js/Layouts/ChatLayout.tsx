@@ -1,3 +1,4 @@
+import { increment, resetUnread } from '@/actions/message-unread-actions';
 import SortConversation from '@/actions/sort-conversation';
 import ConversationItem from '@/Components/app/conversation/ConversationItem';
 import ConversationSearch from '@/Components/app/ConversationSearch';
@@ -9,6 +10,7 @@ import { Button } from '@headlessui/react';
 import { usePage } from '@inertiajs/react';
 import { PenBox } from 'lucide-react';
 import React, { ChangeEvent, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 	const props = usePage().props;
@@ -29,16 +31,8 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 	const { checkIfUserIsOnline } = useOnlineUsers();
 
 	const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-		const text = e.target.value;
-
-		setSearchText(text);
+		setSearchText(e.target.value);
 	};
-
-	// const incrementUnreadCount = (id: number) => {
-	// 	axios
-	// 		.post(route('message.incrementUnread', id))
-	// 		.catch((err) => console.error(err));
-	// };
 
 	const messageCreated = (message: Message) => {
 		setLocalConversation((prev) => {
@@ -46,28 +40,22 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 				if (
 					c.type === ConversationTypeEnum.PRIVATE &&
 					!message.groupId &&
-					(c.id === message.senderId || c.id === message.receiverId)
+					(c.typeId === message.senderId ||
+						c.typeId === message.receiverId)
 				) {
 					c.lastMessage = message.message;
 					c.lastMessageDate = message.createdAt;
-
-					// if (
-					// 	!selectedConversation ||
-					// 	selectedConversation?.id !== message.senderId
-					// ) {
-					// 	const count = c.unreadMessageCount++;
-					// 	incrementUnreadCount(message.id);
-					// }
-
+					c.lastMessageSenderId = message.senderId;
 					return c;
 				}
 
 				if (
 					c.type === ConversationTypeEnum.GROUP &&
-					c.id === message.groupId
+					c.typeId === message.groupId
 				) {
 					c.lastMessage = message.message;
 					c.lastMessageDate = message.createdAt;
+					c.lastMessageSenderId = message.senderId;
 					return c;
 				}
 
@@ -76,11 +64,59 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 		});
 	};
 
+	const messageUnreadIncremented = (message: Message) => {
+		setLocalConversation((prev) => {
+			return prev.map((c) => {
+				if (
+					c.type === ConversationTypeEnum.PRIVATE &&
+					!message.groupId &&
+					(c.typeId === message.senderId ||
+						c.typeId === message.receiverId)
+				) {
+					c.unreadMessageCount++;
+					increment(message.id);
+					return c;
+				} else if (
+					c.type === ConversationTypeEnum.GROUP &&
+					c.typeId === message.groupId
+				) {
+					c.unreadMessageCount++;
+					increment(message.id);
+					return c;
+				}
+
+				return c;
+			});
+		});
+	};
+
+	const messageUnreadReset = (conversation: Conversation) => {
+		console.log('Resetting unread count for conversation', conversation);
+
+		// 1. Update local state
+		setLocalConversation((prev) => {
+			return prev.map((c) => {
+				console.log(c.id, conversation.id);
+				if (c.id === conversation.id) {
+					return { ...c, unreadMessageCount: 0 };
+				}
+				return c;
+			});
+		});
+
+		// 2. Call backend for THIS conversation
+		resetUnread(conversation.id); // not selectedConversation.id
+	};
+
 	useEffect(() => {
 		const offCreated = on('message.created', messageCreated);
+		const offIncrement = on('unread.increment', messageUnreadIncremented);
+		const offReset = on('unread.reset', messageUnreadReset);
 
 		return () => {
 			offCreated();
+			offIncrement();
+			offReset();
 		};
 	}, [on]);
 
@@ -108,16 +144,15 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 
 	useEffect(() => {
 		conversations.forEach((conversation) => {
-			let channel = `message.group.${conversation.id}`;
+			let channel = `message.group.${conversation.typeId}`;
 
 			if (conversation.type === ConversationTypeEnum.PRIVATE) {
-				channel = `message.private.${[user.id, conversation.id]
+				channel = `message.private.${[user.id, conversation.typeId]
 					.sort((a, b) => a - b)
 					.join('-')}`;
 			}
 
-			// console.log('start listening to channel ' + channel);
-
+			// console.log('listening to channel ' + channel);
 			window.Echo.private(channel)
 				.listen('SocketMessage', (e: { message: Message }) => {
 					const message = e.message;
@@ -128,22 +163,28 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 						return;
 					}
 
-					emit('newMessageNotification', {
-						user: message.sender,
-						groupId: message.groupId,
-						message:
-							message.message ||
-							`shared ${
-								message.attachments?.length === 1
-									? 'an attachment'
-									: message.attachments?.length +
-										' attachments'
-							}`,
-					});
+					if (
+						selectedConversation &&
+						selectedConversation.type ===
+							ConversationTypeEnum.PRIVATE &&
+						!message.groupId &&
+						selectedConversation.typeId === message.senderId
+					) {
+						return;
+					}
 
-					emit('incremenetUnread', {
-						receiver: message.receiverId,
-					});
+					if (
+						selectedConversation &&
+						selectedConversation.type ===
+							ConversationTypeEnum.GROUP &&
+						selectedConversation.typeId === message.groupId
+					) {
+						return;
+					}
+
+					toast('New message notification');
+
+					emit('unread.increment', message);
 				})
 				.error((err: any) => {
 					console.error(err);
@@ -152,16 +193,15 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 
 		return () => {
 			conversations.forEach((conversation) => {
-				let channel = `message.group.${conversation.id}`;
+				let channel = `message.group.${conversation.typeId}`;
 
 				if (conversation.type === ConversationTypeEnum.PRIVATE) {
-					channel = `message.private.${[user.id, conversation.id]
+					channel = `message.private.${[user.id, conversation.typeId]
 						.sort((a, b) => a - b)
 						.join('-')}`;
 				}
 
 				// console.log('Leaving channel ' + channel);
-
 				window.Echo.leave(channel);
 			});
 		};
@@ -245,7 +285,7 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 								<ConversationItem
 									key={
 										`${conversation.type === ConversationTypeEnum.GROUP ? 'group_' : 'user_'}` +
-										conversation.id
+										conversation.typeId
 									}
 									user={user}
 									conversation={conversation}
@@ -253,7 +293,7 @@ const ChatLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
 										conversation.type ===
 										ConversationTypeEnum.PRIVATE
 											? checkIfUserIsOnline(
-													conversation.id
+													conversation.typeId
 												)
 											: undefined
 									}

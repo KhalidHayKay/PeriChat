@@ -55,7 +55,8 @@ class Group extends Model
             ->leftJoin('messages as m', 'm.id', '=', 'c.last_message_id')
             ->where(function ($query) use ($user) {
                 $query->where('gu.user_id', '=', $user->id)
-                    ->orWhere('groups.is_private', '!=', true);
+                    // ->orWhere('groups.is_private', '!=', true)
+                ;
             })
             ->distinct()
             ->orderBy('m.created_at', 'desc')
@@ -72,16 +73,19 @@ class Group extends Model
             ->where('user_id', Auth::id())
         ;
 
+        // dd($query->first());
+
         return $query->first()?->unread_messages_count;
     }
 
-    public function toConversationArray(): array
+    public function toConversationArray(?int $conversationId = null): array
     {
         return [
-            'id'                  => $this->id,
+            'id'                  => $this->c_id ?? $conversationId,
             'name'                => $this->name,
             'avatar'              => $this->avatar,
             'type'                => ConversationTypeEnum::GROUP->value,
+            'typeId'              => $this->id,
             'groupUserIds'        => $this->users()->pluck('users.id'),
             'lastMessage'         => $this->last_message,
             'lastMessageSenderId' => $this->last_message_sender,

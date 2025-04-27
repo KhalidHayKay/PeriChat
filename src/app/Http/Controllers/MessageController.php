@@ -31,8 +31,10 @@ class MessageController extends Controller
             ->paginate(10)
         ;
 
+        $conversationId = $messages->isNotEmpty() ? $messages->first()->conversation_id : null;
+
         return inertia('Home', [
-            'selectedConversation' => $user->toConversationArray(),
+            'selectedConversation' => $user->toConversationArray($conversationId),
             'messages'             => MessageResource::collection($messages),
         ]);
     }
@@ -47,8 +49,10 @@ class MessageController extends Controller
             ->paginate(10)
         ;
 
+        $conversationId = $messages->isNotEmpty() ? $messages->first()->conversation_id : null;
+
         return inertia('Home', [
-            'selectedConversation' => $group->toConversationArray(),
+            'selectedConversation' => $group->toConversationArray($conversationId),
             'messages'             => MessageResource::collection($messages),
         ]);
     }

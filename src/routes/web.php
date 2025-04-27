@@ -19,7 +19,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/message/older/{message}', [MessageController::class, 'loadOlder'])->name('message.loadOlder');
 
     Route::post('/message/unread/{message}', [ConversationController::class, 'incrementUnread'])->name('message.incrementUnread');
-    Route::post('/message/read/{message}', [ConversationController::class, 'markRead'])->name('message.markRead');
+    Route::post('/message/read/{conversation}', [ConversationController::class, 'markRead'])->name('message.markRead');
 });
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');

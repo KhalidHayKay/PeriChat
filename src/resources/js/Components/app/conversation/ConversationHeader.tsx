@@ -14,7 +14,7 @@ const ConversationHeader = ({
 	const isPrivate =
 		selectedConversation.type === ConversationTypeEnum.PRIVATE;
 	const isOnline = checkIfUserIsOnline(
-		isPrivate ? selectedConversation.id : 0
+		isPrivate ? selectedConversation.typeId : 0
 	);
 
 	let onlineGroupUsers = 0;

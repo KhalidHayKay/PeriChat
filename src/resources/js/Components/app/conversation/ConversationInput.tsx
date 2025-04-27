@@ -36,9 +36,9 @@ const ConversationInput = ({
 			formData.append('message', value);
 
 			if (conversation.type === ConversationTypeEnum.PRIVATE) {
-				formData.append('receiver_id', `${conversation.id}`);
+				formData.append('receiver_id', `${conversation.typeId}`);
 			} else if (conversation.type === ConversationTypeEnum.GROUP) {
-				formData.append('group_id', `${conversation.id}`);
+				formData.append('group_id', `${conversation.typeId}`);
 			}
 
 			setSending(true);
@@ -134,14 +134,6 @@ const ConversationInput = ({
 
 	return (
 		<div className={cn('flex flex-col transition duration-500')}>
-			{/* {!uploadProgress && (
-				<progress
-					className='progress progress-info w-56'
-					value={uploadProgress}
-					max='100'
-				></progress>
-			)} */}
-
 			{files.length > 0 && (
 				<PresendPreview files={files} removeFile={removeFile} />
 			)}
