@@ -95,8 +95,6 @@ const ConversationMessages = ({
 		setNoOlderMessages(false);
 	}, [selectedConversation]);
 
-	console.log(selectedConversation);
-
 	useEffect(() => {
 		if (conversationCtrRef.current) {
 			conversationCtrRef.current.scrollTop =

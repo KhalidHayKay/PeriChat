@@ -16,6 +16,7 @@ const ConversationItem = ({
 	online?: boolean;
 	selectedConversation: Conversation | null;
 }) => {
+	console.log(conversation);
 	return (
 		<Link
 			href={

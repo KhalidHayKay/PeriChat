@@ -92,8 +92,6 @@ class User extends Authenticatable
             ->orderBy('users.name');
         ;
 
-        // dd($query->toSql());
-
         return $query->get();
     }
 
@@ -110,20 +108,5 @@ class User extends Authenticatable
         ;
 
         return $query->first()?->unread_messages_count;
-    }
-
-    public function toConversationArray(?int $conversationId = null): array
-    {
-        return [
-            'id'                  => $this->c_id ?? $conversationId,
-            'name'                => $this->name,
-            'avatar'              => $this->avatar,
-            'type'                => ConversationTypeEnum::PRIVATE ->value,
-            'typeId'              => $this->id,
-            'lastMessage'         => $this->last_message,
-            'lastMessageSenderId' => $this->last_message_sender,
-            'lastMessageDate'     => $this->last_message_date ? Carbon::parse($this->last_message_date)->setTimezone('UTC')->toIso8601String() : null,
-            'unreadMessageCount'  => $this->getUnreadCount($conversationId),
-        ];
     }
 }

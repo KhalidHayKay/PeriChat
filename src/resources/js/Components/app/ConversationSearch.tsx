@@ -14,7 +14,6 @@ const ConversationSearch = ({
 	search: {
 		text: string;
 		set: Dispatch<SetStateAction<string>>;
-		handler: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	};
 }) => {
 	const [isExpanded, setIsExpanded] = useState(false);
@@ -74,7 +73,7 @@ const ConversationSearch = ({
 						ref={inputRef}
 						type='text'
 						value={search.text}
-						onChange={search.handler}
+						onChange={(e) => search.set(e.target.value)}
 						placeholder='Type to search...'
 						className={cn(
 							'w-full h-12 pl-4 pr-10 rounded-full border border-secondary-content bg-transparent text-primary-content placeholder:text-primary-content outline-none transition-all duration-300 ease-in-out)',

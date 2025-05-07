@@ -51,7 +51,7 @@ const ConversationInput = ({
 								(ProgressEvent.loaded / ProgressEvent.total) *
 									100
 							);
-							console.log('progress: ', progress);
+							// console.log('progress: ', progress);
 							setUploadProgress(progress);
 						}
 					},
@@ -91,7 +91,6 @@ const ConversationInput = ({
 
 	const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const selectedFiles = e.target.files;
-		console.log('selectedFiles: ', selectedFiles);
 
 		if (!selectedFiles) return;
 

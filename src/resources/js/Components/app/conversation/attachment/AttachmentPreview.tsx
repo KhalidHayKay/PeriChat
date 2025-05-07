@@ -2,8 +2,6 @@ import { formatBytes } from '@/actions/file-check';
 import { FileIcon } from 'lucide-react';
 
 const AttachmentPreview = ({ file }: { file: Attachment }) => {
-	console.log(file);
-	// Function to get file extension
 	const getFileExtension = (filename: string) => {
 		return filename.split('.').pop()?.toUpperCase();
 	};

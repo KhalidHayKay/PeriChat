@@ -2,13 +2,14 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ConversationController;
-use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/', [HomeController::class, 'index'])->name('home');
+    Route::get('/', fn () => Inertia::render('Home'))->name('home');
+    Route::get('/conversation/subjects', [ConversationController::class, 'getSubjects'])->name('conversation.subjects');
 
     Route::get('/user/{user}', [MessageController::class, 'byuser'])->name('conversation.private');
     Route::get('/group/{group}', [MessageController::class, 'byGroup'])->name('conversation.group');

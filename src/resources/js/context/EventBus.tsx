@@ -1,8 +1,8 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useRef } from 'react';
 
 type EventBusDataTypes = {
-	emit: (name: string, data: any) => void;
-	on: (name: string, cb: (...arg: any) => void) => () => void;
+	emit: (name: string, ...data: any) => void;
+	on: (name: string, cb: (...args: any) => void) => () => void;
 };
 
 const EventBusContext = createContext<EventBusDataTypes>(
@@ -10,25 +10,24 @@ const EventBusContext = createContext<EventBusDataTypes>(
 );
 
 export const EventBusProvider = ({ children }: { children: any }) => {
-	const [events, setEvents] = useState<{ [key: string]: any[] }>({});
+	const events = useRef<{ [key: string]: any[] }>({});
 
-	const emit = (name: string, data: any) => {
-		if (events[name]) {
-			events[name].forEach((cb: (d: any) => void) => {
-				cb(data);
+	const emit = (name: string, ...data: any) => {
+		if (events.current[name]) {
+			events.current[name].forEach((cb: (...d: any) => void) => {
+				cb(...data);
 			});
 		}
 	};
 
-	const on = (name: string, cb: () => void) => {
-		if (!events[name]) {
-			events[name] = [];
-		}
-
-		events[name].push(cb);
+	const on = (name: string, cb: (...args: any) => void) => {
+		if (!events.current[name]) events.current[name] = [];
+		events.current[name].push(cb);
 
 		return () => {
-			events[name] = events[name].filter((callback) => callback !== cb);
+			events.current[name] = events.current[name].filter(
+				(fn) => fn !== cb
+			);
 		};
 	};
 

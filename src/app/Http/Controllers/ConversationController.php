@@ -5,13 +5,20 @@ namespace App\Http\Controllers;
 use App\Enums\ConversationTypeEnum;
 use App\Models\Conversation;
 use App\Models\Message;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class ConversationController extends Controller
 {
+    public function getSubjects(Request $request): Collection
+    {
+        return Conversation::getSubjects($request->user());
+    }
+
     public function markRead(Conversation $conversation)
     {
-        $updated = $this->getConversationUserRelationship($conversation)
+        $updated = $this->getUserRelationship($conversation)
             ->updateExistingPivot(Auth::id(), ['unread_messages_count' => 0,]);
 
         if ($updated) {
@@ -23,7 +30,7 @@ class ConversationController extends Controller
 
     public function incrementUnread(Message $message)
     {
-        $affected = $this->getConversationUserRelationship($message->conversation)
+        $affected = $this->getUserRelationship($message->conversation)
             ->where('user_id', Auth::id())->increment('unread_messages_count');
 
         if ($affected > 0) {
@@ -33,7 +40,7 @@ class ConversationController extends Controller
         return response(['message' => 'Unread count not updated or already up-to-date']);
     }
 
-    private function getConversationUserRelationship(Conversation $conversation)
+    private function getUserRelationship(Conversation $conversation)
     {
         return ConversationTypeEnum::isPrivate($conversation)
             ? $conversation->users()
