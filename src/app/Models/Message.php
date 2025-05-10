@@ -46,13 +46,19 @@ class Message extends Model
     {
         return $query->select('messages.*')
             ->where('c.type', '=', ConversationTypeEnum::PRIVATE ->value)
-            ->where('sender_id', '=', Auth::id())
-            ->Where('receiver_id', '=', $otherUser->id)
-            ->orWhere('sender_id', '=', $otherUser->id)
-            ->where('receiver_id', '=', Auth::id())
+            ->where(function (Builder $q) use ($otherUser) {
+                $q->where(function ($q) use ($otherUser) {
+                    $q->where('sender_id', Auth::id())
+                        ->where('receiver_id', $otherUser->id);
+                })->orWhere(function ($q) use ($otherUser) {
+                    $q->where('sender_id', $otherUser->id)
+                        ->where('receiver_id', Auth::id());
+                });
+            })
             ->leftJoin('conversations as c', 'messages.conversation_id', '=', 'c.id')
+            ->with(['conversation', 'sender', 'attachments'])
             ->latest()
-            ->paginate(10);
+            ->simplePaginate(10);
     }
 
     public function scopeForGroup(Builder $query, Group $group)
@@ -61,15 +67,17 @@ class Message extends Model
             ->where('c.type', '=', ConversationTypeEnum::GROUP->value)
             ->where('c.group_id', '=', $group->id)
             ->leftJoin('conversations as c', 'messages.conversation_id', '=', 'c.id')
+            ->with(['conversation', 'sender', 'attachments'])
             ->latest()
-            ->paginate(10);
+            ->simplePaginate(10);
     }
 
     public function scopeOlder(Builder $query, Message $message)
     {
         return $query->where('created_at', '<', $message->created_at)
             ->where('conversation_id', '=', $message->conversation->id)
+            ->with(['conversation', 'sender', 'attachments'])
             ->latest()
-            ->paginate(10);
+            ->simplePaginate(10);
     }
 }

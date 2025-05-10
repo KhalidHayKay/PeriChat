@@ -49,6 +49,7 @@ class Group extends Model
             'm.message as last_message',
             'm.sender_id as last_message_sender',
             'm.created_at as last_message_date',
+            DB::raw('(SELECT COUNT(*) FROM message_attachments WHERE message_attachments.message_id = m.id) as last_message_attachment_count'),
         ])
             ->leftJoin('group_user as gu', 'gu.group_id', '=', 'groups.id')
             ->leftJoin('conversations as c', 'c.group_id', '=', 'groups.id')

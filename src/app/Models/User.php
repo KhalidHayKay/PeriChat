@@ -79,6 +79,7 @@ class User extends Authenticatable
             'm.created_at as last_message_date',
             'm.sender_id as last_message_sender',
             'm.message as last_message',
+            DB::raw('(SELECT COUNT(*) FROM message_attachments WHERE message_attachments.message_id = m.id) as last_message_attachment_count'),
         ])
             ->where('users.id', '!=', $user->id)
             ->leftJoin('user_conversation as uc', 'uc.user_id', '=', 'users.id')

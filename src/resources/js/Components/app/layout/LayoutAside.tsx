@@ -3,6 +3,7 @@ import ConversationSearch from '@/Components/app/ConversationSearch';
 import useOnlineUsers from '@/context/OnlineUsers';
 import { ConversationTypeEnum } from '@/enums/enums';
 import { useConversations } from '@/hooks/useConversations';
+import { useMessageSubscriptions } from '@/hooks/useMessageSubscriptions';
 import { cn } from '@/utils/utils';
 import { Button } from '@headlessui/react';
 import { PenBox } from 'lucide-react';
@@ -16,8 +17,9 @@ const LayoutAside = ({
 	};
 }) => {
 	const { checkIfUserIsOnline } = useOnlineUsers();
-	const { sorted, filter, setFilter, searchText, setSearchText } =
+	const { local, sorted, filter, setFilter, searchText, setSearchText } =
 		useConversations();
+	useMessageSubscriptions(local, user, selectedConversation);
 
 	return (
 		<aside

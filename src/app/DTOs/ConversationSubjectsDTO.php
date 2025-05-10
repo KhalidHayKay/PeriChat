@@ -18,7 +18,6 @@ class ConversationSubjectsDTO
         private ?int $conversationId = null,
         private ?array $unreadCounts = null,
     ) {
-        // dd($unreadCounts);
         $this->type            = $model instanceof User ? ConversationTypeEnum::PRIVATE : ConversationTypeEnum::GROUP;
         $this->lastMessageDate = $this->model->last_message_date ?
             Carbon::parse($this->model->last_message_date)->setTimezone('UTC')->toIso8601String() : null;
@@ -39,21 +38,18 @@ class ConversationSubjectsDTO
     public function toArray(): array
     {
         $data = [
-            'id'                  => $this->model->c_id ?? $this->conversationId,
-            'name'                => $this->model->name,
-            'avatar'              => $this->model->avatar,
-            'type'                => $this->type,
-            'typeId'              => $this->model->id,
-            'lastMessage'         => $this->model->last_message,
-            'lastMessageDate'     => $this->lastMessageDate,
-            'lastMessageSenderId' => $this->model->last_message_sender,
-            'unreadMessageCount'  => $this->unread,
+            'id'                         => $this->model->c_id ?? $this->conversationId,
+            'name'                       => $this->model->name,
+            'avatar'                     => $this->model->avatar,
+            'type'                       => $this->type,
+            'typeId'                     => $this->model->id,
+            'lastMessage'                => $this->model->last_message,
+            'lastMessageAttachmentCount' => $this->model->last_message_attachment_count,
+            'lastMessageDate'            => $this->lastMessageDate,
+            'lastMessageSenderId'        => $this->model->last_message_sender,
+            'unreadMessageCount'         => $this->unread,
         ];
-
-        $this->type === ConversationTypeEnum::GROUP &&
-            $data['groupUserIds'] = $this->model->users()->pluck('users.id');
 
         return $data;
     }
-
 }

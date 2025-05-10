@@ -3,10 +3,11 @@ interface Conversation {
 	name: string;
 	type: string;
 	typeId: number;
-	avatar: string | null;
-	lastMessage: string | null;
-	lastMessageSenderId: number | null;
-	lastMessageDate: string | null;
+	avatar: string;
+	lastMessage: string;
+	lastMessageAttachmentCount: number;
+	lastMessageSenderId: number;
+	lastMessageDate: string;
 	unreadMessageCount: number;
 	groupUserIds?: number[];
 }

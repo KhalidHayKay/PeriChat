@@ -20,7 +20,7 @@ class MessageController extends Controller
 
         $conversationId = $messages->isNotEmpty() ? $messages->first()->conversation_id : null;
 
-        return inertia('Home', [
+        return inertia('Conversation', [
             'selectedConversation' => (new ConversationSubjectsDTO($user, $conversationId))->toArray(),
             'messages'             => MessageResource::collection($messages),
         ]);
@@ -32,7 +32,7 @@ class MessageController extends Controller
 
         $conversationId = $messages->isNotEmpty() ? $messages->first()->conversation_id : null;
 
-        return inertia('Home', [
+        return inertia('Conversation', [
             'selectedConversation' => (new ConversationSubjectsDTO($group, $conversationId))->toArray(),
             'messages'             => MessageResource::collection($messages),
         ]);

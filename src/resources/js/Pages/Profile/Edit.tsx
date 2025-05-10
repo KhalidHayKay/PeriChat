@@ -1,5 +1,4 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PageProps } from '@/types';
 import { cn } from '@/utils/utils';
 import { UserIcon } from '@heroicons/react/16/solid';
@@ -27,7 +26,7 @@ export default function Edit({
 	const active = true;
 
 	return (
-		<AuthenticatedLayout>
+		<>
 			<Head title='Profile' />
 
 			{/* side nav bar */}
@@ -126,6 +125,6 @@ export default function Edit({
 
 				<footer className='w-full h-1 sm:h-5 bg-secondary fixed bottom-0 right-0'></footer>
 			</div>
-		</AuthenticatedLayout>
+		</>
 	);
 }

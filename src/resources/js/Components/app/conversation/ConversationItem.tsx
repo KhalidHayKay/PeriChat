@@ -2,7 +2,7 @@ import FormatChatDate from '@/actions/format-chat-date';
 import { ConversationTypeEnum } from '@/enums/enums';
 import { cn } from '@/utils/utils';
 import { Link } from '@inertiajs/react';
-import { CheckCheck } from 'lucide-react';
+import { CheckCheck, FileIcon } from 'lucide-react';
 import Avatar from '../Avatar';
 
 const ConversationItem = ({
@@ -16,7 +16,6 @@ const ConversationItem = ({
 	online?: boolean;
 	selectedConversation: Conversation | null;
 }) => {
-	console.log(conversation);
 	return (
 		<Link
 			href={
@@ -44,17 +43,24 @@ const ConversationItem = ({
 						{conversation.name}
 					</h1>
 					<p className='text-secondary-content text-xs flex items-center'>
-						{/* <Pin className='size-4 mr-1' />{' '} */}
-						{conversation.lastMessageDate
-							? FormatChatDate(conversation.lastMessageDate)
-							: ''}
+						{FormatChatDate(conversation.lastMessageDate)}
 					</p>
 				</div>
 				<div className='flex items-center justify-between'>
-					<p className='text-secondary-content max-w-[160px] mobile:max-w-[250px] sm:max-w-[180px] truncate'>
-						{conversation.lastMessage ?? 'No message'}
+					<p className='text-secondary-content max-w-[160px] mobile:max-w-[250px] sm:max-w-[180px] truncate flex items-center'>
+						{conversation.lastMessageAttachmentCount > 0 && (
+							<FileIcon className='mr-1 w-4 h-4 flex-shrink-0' />
+						)}
+						<span>
+							{conversation.lastMessage ? (
+								conversation.lastMessage
+							) : conversation.lastMessageAttachmentCount > 0 ? (
+								<span className='text-sm'>Attachment</span>
+							) : (
+								'No messages yet'
+							)}
+						</span>
 					</p>
-
 					{conversation.lastMessageSenderId === user.id ? (
 						<CheckCheck className='size-4 mt-0.5 text-secondary-content' />
 					) : (

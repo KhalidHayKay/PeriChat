@@ -15,6 +15,7 @@ export const messageCreated = (
 				lastMessage: message.message,
 				lastMessageDate: message.createdAt,
 				lastMessageSenderId: message.senderId,
+				lastMessageAttachmentCount: message.attachments?.length ?? 0,
 			};
 		})
 	);

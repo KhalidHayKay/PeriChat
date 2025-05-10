@@ -6,7 +6,6 @@ import {
 	PopoverPanel,
 	Textarea,
 } from '@headlessui/react';
-import { DocumentIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import axios, { AxiosError } from 'axios';
 import EmojiPicker from 'emoji-picker-react';
 import { Plus, Send, Smile } from 'lucide-react';
@@ -170,43 +169,17 @@ const ConversationInput = ({
 					/>
 				</div>
 
-				<div className='dropdown dropdown-top dropdown-left'>
-					<div
-						tabIndex={0}
-						className='size-10 flex items-center justify-center border border-secondary-content rounded-full cursor-pointer'
-					>
-						<Plus className='size-4' />
-					</div>
-					<ul
-						tabIndex={0}
-						className='dropdown-content menu bg-primary rounded-box z-2 w-[220px] p-1 !px-0 shadow translate-x-1/3 -translate-y-2'
-					>
-						<li className='relative hover:bg-secondary/50'>
-							<div className='flex items-center gap-x-2'>
-								<PhotoIcon className='size-5 text-primary-content' />
-								<p className='text-base'>Photos and Videos</p>
-							</div>
-							<input
-								type='file'
-								multiple
-								accept='image/*, video/*'
-								onChange={handleFileChange}
-								className='absolute top-0 bottom-0 right-0 left-0 z-20 opacity-0 p-0'
-							/>
-						</li>
-						<li className='relative hover:bg-secondary/50'>
-							<input
-								type='file'
-								multiple
-								onChange={handleFileChange}
-								className='absolute top-0 bottom-0 right-0 left-0 z-20 opacity-0'
-							/>
-							<div className='flex items-center gap-x-2'>
-								<DocumentIcon className='size-5 text-primary-content' />
-								<p className='text-base'>Documents</p>
-							</div>
-						</li>
-					</ul>
+				<div
+					tabIndex={0}
+					className='size-10 flex items-center justify-center border border-secondary-content rounded-full relative'
+				>
+					<input
+						type='file'
+						multiple
+						onChange={handleFileChange}
+						className='absolute top-0 bottom-0 right-0 left-0 z-20 opacity-0 p-0'
+					/>
+					<Plus className='size-4' />
 				</div>
 				<button
 					disabled={value.trim() === '' && files.length === 0}
