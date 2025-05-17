@@ -5,8 +5,7 @@ import { ConversationTypeEnum } from '@/enums/enums';
 import { useConversations } from '@/hooks/useConversations';
 import { useMessageSubscriptions } from '@/hooks/useMessageSubscriptions';
 import { cn } from '@/utils/utils';
-import { Button } from '@headlessui/react';
-import { PenBox } from 'lucide-react';
+import NewConversationDropdown from '../new-conversation/NewConversationDropdown';
 
 const LayoutAside = ({
 	data: { user, selectedConversation },
@@ -76,17 +75,20 @@ const LayoutAside = ({
 				</div>
 			</header>
 
-			<div className='max-h-[calc(100%-135px)] pl-1 mobile:px-5 sm:pl-1 sm:pr-0 overflow-y-auto custom-scrollbar'>
+			<div className='h-[calc(100%-135px)] pl-1 mobile:px-5 sm:pl-1 sm:pr-0 overflow-y-auto custom-scrollbar'>
 				<div className='flex items-center justify-between mb-3 px-3 mobile:px-5 sm:px-3'>
 					<h2 className='text-secondary-content font-semibold ml-1'>
 						Messages
 					</h2>
 
-					<Button>
-						<PenBox className='size-5' />
-					</Button>
+					<NewConversationDropdown />
 				</div>
 				<div className='space-y-1'>
+					{sorted.length < 1 && (
+						<div className='size-full flex items-center justify-center mt-20'>
+							You have no existing conversation
+						</div>
+					)}
 					{sorted.map((conversation) => (
 						<ConversationItem
 							key={

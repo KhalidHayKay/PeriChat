@@ -9,5 +9,5 @@ interface Conversation {
 	lastMessageSenderId: number;
 	lastMessageDate: string;
 	unreadMessageCount: number;
-	groupUserIds?: number[];
+	groupUsersId?: number[];
 }

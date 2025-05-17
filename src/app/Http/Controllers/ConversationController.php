@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ConversationTypeEnum;
+use App\Http\Resources\GroupResource;
+use App\Http\Resources\UserResource;
 use App\Models\Conversation;
 use App\Models\Message;
 use Illuminate\Http\Request;
@@ -13,7 +15,28 @@ class ConversationController extends Controller
 {
     public function getSubjects(Request $request): Collection
     {
-        return Conversation::getSubjects($request->user());
+        return Conversation::getExistingSubjects($request->user());
+    }
+
+    public function getGroups(Request $request)
+    {
+        $subjects = Conversation::getNewGroupSubjects($request->user());
+
+        return GroupResource::collection($subjects);
+    }
+
+    public function getUsersForGroup(Request $request)
+    {
+        $subjects = Conversation::getUsersForNewGroup($request->user());
+
+        return UserResource::collection($subjects);
+    }
+
+    public function getAppUsers(Request $request)
+    {
+        $subjects = Conversation::getNewUserSubjects($request->user());
+
+        return UserResource::collection($subjects);
     }
 
     public function markRead(Conversation $conversation)

@@ -138,7 +138,7 @@ export default function Register() {
 						className='w-full flex items-center justify-center gap-x-2'
 						disabled={processing}
 					>
-						<span>Log in</span>
+						<span>Register</span>
 						<ArrowRight className='size-5' />
 					</PrimaryButton>
 				</div>

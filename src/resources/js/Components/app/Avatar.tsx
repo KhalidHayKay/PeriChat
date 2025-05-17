@@ -8,7 +8,7 @@ const Avatar = ({
 	isGroup = false,
 	isProfile = false,
 }: {
-	avatarUrl: string | null;
+	avatarUrl?: string | null;
 	online?: boolean;
 	isGroup?: boolean;
 	isProfile?: boolean;

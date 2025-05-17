@@ -8,8 +8,12 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/', fn () => Inertia::render('Home'))->name('home');
+    Route::inertia('/', 'Home')->name('home');
+
     Route::get('/conversation/subjects', [ConversationController::class, 'getSubjects'])->name('conversation.subjects');
+    Route::get('/conversation/new/public-groups', [ConversationController::class, 'getGroups'])->name('conversation.new.groups');
+    Route::get('/conversation/new/group-users', [ConversationController::class, 'getUsersForGroup'])->name('conversation.new.group-users');
+    Route::get('/conversation/new/users', [ConversationController::class, 'getAppUsers'])->name('conversation.new.users');
 
     Route::get('/user/{user}', [MessageController::class, 'byuser'])->name('conversation.private');
     Route::get('/group/{group}', [MessageController::class, 'byGroup'])->name('conversation.group');

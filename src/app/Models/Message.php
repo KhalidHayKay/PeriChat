@@ -74,8 +74,9 @@ class Message extends Model
 
     public function scopeOlder(Builder $query, Message $message)
     {
-        return $query->where('created_at', '<', $message->created_at)
-            ->where('conversation_id', '=', $message->conversation->id)
+        return $query
+            ->where('created_at', '<', $message->created_at)
+            ->where('conversation_id', '=', $message->conversation_id)
             ->with(['conversation', 'sender', 'attachments'])
             ->latest()
             ->simplePaginate(10);
