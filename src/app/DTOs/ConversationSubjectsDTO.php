@@ -56,10 +56,10 @@ class ConversationSubjectsDTO
         if ($this->unreadCounts !== null) {
             if ($this->model instanceof User) {
                 $lookupId = $this->conversationId ?? $this->model->c_id ?? null;
-                return $lookupId ? ($this->unreadCounts[$lookupId] ?? 0) : 0;
+                return $lookupId ? ($this->unreadCounts[$lookupId] ?? 0) : null;
             }
 
-            return $this->unreadCounts[$this->model->id] ?? 0;
+            return $this->unreadCounts[$this->model->id] ?? null;
         }
 
         // If we have a conversation ID, use model methods to get counts

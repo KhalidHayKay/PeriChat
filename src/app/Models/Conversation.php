@@ -57,10 +57,12 @@ class Conversation extends Model
             ->where('user_id', $user->id)
             ->pluck('unread_messages_count', 'group_id'); // [group_id => count]
 
+        // dd($groupUnreadCounts);
+
         return collect([...$users, ...$groups])->map(
             fn ($model) => (new ConversationSubjectsDTO(
                 $model,
-                unreadCounts: $userUnreadCounts->concat($groupUnreadCounts)->toArray()
+                unreadCounts: $userUnreadCounts->union($groupUnreadCounts)->toArray()
             ))->toArray()
         );
     }

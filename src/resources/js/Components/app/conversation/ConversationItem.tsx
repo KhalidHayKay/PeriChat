@@ -51,7 +51,7 @@ const ConversationItem = ({
 						{conversation.lastMessageAttachmentCount > 0 && (
 							<FileIcon className='mr-1 w-4 h-4 flex-shrink-0' />
 						)}
-						<span>
+						<span className='max-w-full truncate'>
 							{conversation.lastMessage ? (
 								conversation.lastMessage
 							) : conversation.lastMessageAttachmentCount > 0 ? (
