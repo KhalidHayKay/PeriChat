@@ -1,0 +1,158 @@
+@import 'tailwindcss';
+@import "tw-animate-css";
+@plugin "daisyui";
+
+/* DaisyUI light theme override */
+@plugin "daisyui/theme" {
+  name: "perilight";
+  default: true; /* set as default */
+  prefersdark: false;
+  color-scheme: light;
+
+  /* Base colors */
+  --color-base-100: var(--background, #ffffff);
+  --color-base-200: var(--secondary, #f1f3f5); /* closest match */
+  --color-base-300: var(--border, #e5e7eb);
+  --color-base-content: var(--foreground, #292929);
+
+  /* Primary */
+  --color-primary: var(--primary, #ffffff);
+  --color-primary-content: var(--primary-foreground, #292929);
+
+  /* Secondary */
+  --color-secondary: var(--secondary, #f1f3f5);
+  --color-secondary-content: var(--secondary-foreground, #696969);
+
+  /* Accent */
+  --color-accent: var(--accent, #32cd32);
+  --color-accent-content: var(--accent-foreground, #292929);
+
+  /* Neutral → fallback to card */
+  --color-neutral: var(--card, #ffffff);
+  --color-neutral-content: var(--card-foreground, #292929);
+
+  /* Info → fallback to ring (blue) */
+  --color-info: var(--ring, #3b82f6);
+  --color-info-content: #ffffff;
+
+  /* Success → fallback to accent (green) */
+  --color-success: var(--accent, #32cd32);
+  --color-success-content: #ffffff;
+
+  /* Warning → no direct match, fallback to muted */
+  --color-warning: var(--muted, #f1f3f5);
+  --color-warning-content: var(--muted-foreground, #696969);
+
+  /* Error */
+  --color-error: var(--destructive, #ff4d4d);
+  --color-error-content: var(--destructive-foreground, #ffffff);
+}
+
+@theme {
+  --color-periGreen: #32cd32;
+  --color-periBlue: #0084ff;
+  --color-periRed: #ff4d4d;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* Radius scale */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Map DaisyUI → ChadCN */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+:root {
+  --radius: 0.625rem;
+
+  /* Unified Light */
+  --background: #ffffff;
+  --foreground: #292929;
+
+  --card: #ffffff;
+  --card-foreground: #292929;
+
+  --popover: #ffffff;
+  --popover-foreground: #292929;
+
+  --primary: #ffffff;
+  --primary-foreground: #292929;
+
+  --secondary: #f1f3f5;
+  --secondary-foreground: #696969;
+
+  --muted: #f1f3f5;
+  --muted-foreground: #696969;
+
+  --accent: #32cd32;
+  --accent-foreground: #292929;
+
+  --destructive: #ff4d4d;
+  --destructive-foreground: #ffffff;
+
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #3b82f6;
+}
+
+.dark {
+  /* Unified Dark */
+  --background: #292929;
+  --foreground: #f1f3f5;
+
+  --card: #292929;
+  --card-foreground: #f1f3f5;
+
+  --popover: #292929;
+  --popover-foreground: #f1f3f5;
+
+  --primary: #292929;
+  --primary-foreground: #ffffff;
+
+  --secondary: #3a3a3a;
+  --secondary-foreground: #f1f3f5;
+
+  --muted: #3a3a3a;
+  --muted-foreground: #f1f3f5;
+
+  --accent: #32cd32;
+  --accent-foreground: #ffffff;
+
+  --destructive: #ff4d4d;
+  --destructive-foreground: #ffffff;
+
+  --border: #444444;
+  --input: #444444;
+  --ring: #3b82f6;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
