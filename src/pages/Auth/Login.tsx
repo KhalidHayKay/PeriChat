@@ -8,13 +8,15 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { useAuthContext } from '@/contexts/AuthContext';
+import useAuth from '@/hooks/useAuth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Link, useNavigate } from 'react-router';
 import * as z from 'zod';
 
-// Zod schema for form validation
 const loginSchema = z.object({
     email: z
         .email('Please enter a valid email address')
@@ -23,110 +25,40 @@ const loginSchema = z.object({
         .string()
         .min(6, 'Password must be at least 6 characters')
         .min(1, 'Password is required'),
-    remember: z.boolean().optional(),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
-    const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [status, setStatus] = useState<string>('success');
-    const [apiError, setApiError] = useState<string>('');
+    const { handleLogin, isLoading, error } = useAuth();
+    const { login } = useAuthContext();
+    const navigate = useNavigate();
 
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
             email: '',
             password: '',
-            remember: false,
         },
     });
 
     const onSubmit = async (values: LoginFormValues) => {
-        setIsLoading(true);
-        setApiError('');
-        setStatus('');
+        const { email, password } = values;
 
-        try {
-            // Replace this with your actual API call
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                },
-                body: JSON.stringify({
-                    email: values.email,
-                    password: values.password,
-                    remember: values.remember,
-                }),
-            });
+        const result = await handleLogin(email, password);
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                // Handle validation errors from backend
-                if (data.errors) {
-                    // Set field-specific errors
-                    Object.entries(data.errors).forEach(([field, messages]) => {
-                        if (field === 'email' || field === 'password') {
-                            form.setError(field, {
-                                type: 'server',
-                                message: Array.isArray(messages)
-                                    ? messages[0]
-                                    : messages,
-                            });
-                        }
-                    });
-
-                    // Set general error if no field-specific errors
-                    if (!data.errors.email && !data.errors.password) {
-                        setApiError(data.message || 'Login failed');
-                    }
-                } else {
-                    setApiError(data.message || 'Login failed');
-                }
-                return;
-            }
-
-            // Success! Handle the response
-            setStatus('Login successful! Redirecting...');
-
-            // Store token if needed
-            if (data.token) {
-                // Note: In a real app, you'd store this properly
-                // localStorage.setItem('auth_token', data.token);
-                console.log('Token received:', data.token);
-            }
-
-            // Redirect after success
-            setTimeout(() => {
-                // In a real app: window.location.href = '/dashboard';
-                setStatus('Would redirect to dashboard now');
-            }, 1500);
-        } catch (error) {
-            setApiError('Network error. Please try again.');
-        } finally {
-            setIsLoading(false);
-            // Reset password field for security
-            form.setValue('password', '');
+        if (result.success) {
+            login(result.data);
+            navigate('/');
         }
     };
 
     return (
         <div className='w-full'>
-            {/* Status message - EXACT match to your original */}
-            {status && (
-                <div className='mb-4 text-sm font-medium text-green-600'>
-                    {status}
-                </div>
-            )}
-
-            {/* API Error message - using your periRed color */}
-            {apiError && (
-                <div className='mb-4 text-sm font-medium text-periRed'>
-                    {apiError}
+            {error && (
+                <div className='mb-4 text-sm text-center font-medium text-periRed'>
+                    {error}
                 </div>
             )}
 
@@ -208,21 +140,19 @@ export default function Login() {
                     </div>
 
                     <div className='mt-4 flex flex-col items-center justify-center gap-y-4'>
-                        <button
+                        <Link
+                            to='#'
                             type='button'
                             className='rounded-md text-sm text-secondary-content underline hover:text-primary-content focus:outline-none focus:ring-2 focus:ring-periBlue/80 focus:ring-offset-2 transition-colors'
-                            onClick={() => {
-                                // Handle forgot password navigation
-                                console.log('Navigate to forgot password');
-                            }}
                         >
                             Forgot your password?
-                        </button>
+                        </Link>
 
+                        {/* Login button */}
                         <Button
                             type='button'
                             onClick={form.handleSubmit(onSubmit)}
-                            className='w-full flex items-center justify-center gap-x-2 bg-periBlue hover:bg-periBlue/90 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-periBlue/80 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
+                            className='w-full flex items-center justify-center gap-x-2 bg-periBlue hover:bg-periBlue/90 text-white font-medium py-2 px-4 rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-periBlue/80 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
                             disabled={isLoading}
                         >
                             {isLoading ? (
@@ -237,6 +167,29 @@ export default function Login() {
                                 </>
                             )}
                         </Button>
+
+                        {/* Divider */}
+                        <div className='relative w-full flex items-center my-2'>
+                            <div className='flex-grow border-t border-gray-200'></div>
+                            <span className='px-2 text-xs text-secondary-content'>
+                                or
+                            </span>
+                            <div className='flex-grow border-t border-gray-200'></div>
+                        </div>
+
+                        {/* Google Login Button */}
+                        <Button
+                            type='button'
+                            // onClick={handleGoogleLogin} // <- you wire this
+                            className='w-full flex items-center justify-center gap-x-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors'
+                        >
+                            <img
+                                src='https://www.svgrepo.com/show/475656/google-color.svg'
+                                alt='Google logo'
+                                className='h-5 w-5'
+                            />
+                            <span>Continue with Google</span>
+                        </Button>
                     </div>
                 </div>
             </Form>
@@ -245,16 +198,13 @@ export default function Login() {
                 <span className='text-sm text-secondary-content'>
                     Don't have an account?
                 </span>
-                <button
+                <Link
+                    to='/register'
                     type='button'
                     className='rounded-md text-sm text-secondary-content underline hover:text-primary-content focus:outline-none focus:ring-2 focus:ring-periBlue/80 focus:ring-offset-2 transition-colors'
-                    onClick={() => {
-                        // Handle register navigation
-                        console.log('Navigate to register');
-                    }}
                 >
                     Register
-                </button>
+                </Link>
             </div>
         </div>
     );
