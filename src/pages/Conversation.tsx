@@ -1,86 +1,69 @@
-import ConversationHeader from '@/Components/app/conversation/ConversationHeader';
-import ConversationInput from '@/Components/app/conversation/ConversationInput';
-import ConversationMessages from '@/Components/app/conversation/ConversationMessages';
-import useEventBus from '@/context/EventBus';
-import { ConversationTypeEnum } from '@/enums/enums';
-import ChatLayout from '@/Layouts/ChatLayout';
-import { usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import ConversationHeader from '@/components/conversation/ConversationHeader';
+import ConversationInput from '@/components/conversation/ConversationInput';
+import ConversationMessages from '@/components/conversation/ConversationMessages';
+import ConversationNotFoundError from '@/components/errors/ConversationNotFoundError';
+import ConversationHeaderSkeleton from '@/components/skeletons/ConversationHeaderSkeleton';
+import ConversationInputSkeleton from '@/components/skeletons/ConversationInputSkeleton';
+import ConversationMessagesSkeleton from '@/components/skeletons/ConversationMessagesSkeleton';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { useChatContext } from '@/contexts/ChatContext';
+import { useMessages } from '@/hooks/useMessages';
 
-const Conversation = ({
-	messages,
-	selectedConversation,
-}: {
-	messages?: { data: Message[] };
-	selectedConversation: Conversation;
-}) => {
-	const page = usePage();
-	const user = page.props.auth.user;
+const Conversation = () => {
+    const { user } = useAuthContext();
+    const {
+        isLoadingConversation,
+        conversationNotFound,
+        selectedConversation,
+    } = useChatContext();
+    const { messages, setMessages, error, loading } =
+        useMessages(selectedConversation);
 
-	const [localMessages, setLocalMessages] = useState<Message[]>([]);
+    // console.log(
+    //     isLoadingConversation,
+    //     conversationNotFound,
+    //     selectedConversation,
+    //     loading
+    // );
 
-	const { on } = useEventBus();
+    if (isLoadingConversation) {
+        return (
+            <>
+                <ConversationHeaderSkeleton />
+                <div className='flex-1 bg-secondary/50 overflow-hidden relative'>
+                    <ConversationMessagesSkeleton />
+                </div>
+                <ConversationInputSkeleton />
+            </>
+        );
+    }
 
-	const messageCreated = (message: Message) => {
-		if (
-			selectedConversation &&
-			selectedConversation.type === ConversationTypeEnum.GROUP &&
-			selectedConversation.typeId === message.groupId
-		) {
-			setLocalMessages((prev) => [...prev, message]);
-		}
+    if (conversationNotFound) return <ConversationNotFoundError />;
 
-		if (
-			selectedConversation &&
-			selectedConversation.type === ConversationTypeEnum.PRIVATE &&
-			!message.groupId &&
-			(selectedConversation.typeId === message.senderId ||
-				selectedConversation.typeId === message.receiverId)
-		) {
-			setLocalMessages((prev) => [...prev, message]);
-		}
-	};
+    return (
+        // using 'selectedConversation as Conversation' because at this point, it is guaranteed to be non-null
+        // might find a way to assert that later
+        <>
+            <ConversationHeader
+                selectedConversation={selectedConversation as Conversation}
+            />
 
-	useEffect(() => {
-		const offCreated = on('message.created', messageCreated);
+            <div className='flex-1 bg-secondary/50 overflow-hidden relative'>
+                <ConversationMessages
+                    messages={messages}
+                    setMessages={setMessages}
+                    loading={loading}
+                    error={error}
+                    selectedConversation={selectedConversation}
+                    user={user}
+                />
+            </div>
 
-		return () => {
-			offCreated();
-		};
-	}, [selectedConversation]);
-
-	useEffect(() => {
-		setLocalMessages(messages ? messages.data.reverse() : []);
-	}, [messages]);
-
-	return (
-		<>
-			<ConversationHeader selectedConversation={selectedConversation} />
-
-			<div className='flex-1 bg-secondary/50 overflow-hidden relative'>
-				{localMessages.length > 0 ? (
-					<>
-						<ConversationMessages
-							messages={localMessages}
-							setMessages={setLocalMessages}
-							selectedConversation={selectedConversation}
-							user={user}
-						/>
-					</>
-				) : (
-					<div className='size-full flex items-center justify-center'>
-						No message to see. start a conversation.
-					</div>
-				)}
-			</div>
-
-			<ConversationInput conversation={selectedConversation} />
-		</>
-	);
+            <ConversationInput
+                conversation={selectedConversation as Conversation}
+            />
+        </>
+    );
 };
-
-Conversation.layout = (page: React.ReactNode) => (
-	<ChatLayout>{page}</ChatLayout>
-);
 
 export default Conversation;

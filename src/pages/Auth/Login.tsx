@@ -8,6 +8,7 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { routes } from '@/config/routes';
 import { useAuthContext } from '@/contexts/AuthContext';
 import useAuth from '@/hooks/useAuth';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -50,7 +51,7 @@ export default function Login() {
 
         if (result.success) {
             login(result.data);
-            navigate('/');
+            navigate(routes.app.home);
         }
     };
 
@@ -199,7 +200,7 @@ export default function Login() {
                     Don't have an account?
                 </span>
                 <Link
-                    to='/register'
+                    to={routes.app.auth.register}
                     type='button'
                     className='rounded-md text-sm text-secondary-content underline hover:text-primary-content focus:outline-none focus:ring-2 focus:ring-periBlue/80 focus:ring-offset-2 transition-colors'
                 >

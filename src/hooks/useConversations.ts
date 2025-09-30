@@ -10,7 +10,7 @@ export function useConversations() {
     const [searchText, setSearchText] = useState('');
 
     useEffect(() => {
-        let filtered = [...conversations]; // Use conversations from context
+        let filtered = [...conversations];
 
         if (filter !== 'all') {
             filtered = filtered.filter((c) => c.type === filter);

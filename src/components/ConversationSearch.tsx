@@ -18,24 +18,33 @@ const ConversationSearch = ({
     };
 }) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [shouldClearSearch, setShouldClearSearch] = useState(false);
 
     const inputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
         if (isExpanded && inputRef.current) {
             inputRef.current.focus();
+            setShouldClearSearch(false);
         }
 
-        if (!isExpanded) {
-            search.set('');
+        if (!isExpanded && !shouldClearSearch) {
+            setShouldClearSearch(true);
+            // Delay clearing the search to allow animation to complete
+            const timer = setTimeout(() => {
+                search.set('');
+                setShouldClearSearch(false);
+            }, 300); // Match the transition duration
+
+            return () => clearTimeout(timer);
         }
-    }, [isExpanded]);
+    }, [isExpanded, shouldClearSearch, search]);
 
     return (
         <div className='relative w-full h-[60px] flex items-center justify-between'>
             <div
                 className={cn(
-                    'absolute left-1 flex items-center gap-3 transition-all duration-300',
+                    'absolute left-1 flex items-center gap-3 transition-all duration-250 ease-in-out',
                     isExpanded ? 'opacity-0 invisible' : 'opacity-100 visible'
                 )}
             >
@@ -60,13 +69,13 @@ const ConversationSearch = ({
             {/* Search Field (overlays entire container when active) */}
             <div
                 className={cn(
-                    'absolute right-0 transition-all duration-300 flex items-center justify-end',
+                    'absolute right-0 transition-all duration-300 ease-in-out flex items-center justify-end',
                     isExpanded ? 'w-full' : 'w-auto'
                 )}
             >
                 <div
                     className={cn(
-                        'relative transition-all duration-500 ease-in-out',
+                        'relative transition-all duration-300 ease-in-out',
                         isExpanded ? 'w-full' : 'w-12'
                     )}
                 >
@@ -77,7 +86,7 @@ const ConversationSearch = ({
                         onChange={(e) => search.set(e.target.value)}
                         placeholder='Type to search...'
                         className={cn(
-                            'w-full h-12 pl-4 pr-10 rounded-full border border-secondary-content bg-transparent text-primary-content placeholder:text-primary-content outline-none transition-all duration-300 ease-in-out)',
+                            'w-full h-12 pl-4 pr-10 rounded-full border border-secondary-content bg-transparent text-primary-content placeholder:text-primary-content outline-none transition-all duration-300 ease-in-out',
                             isExpanded
                                 ? 'opacity-100'
                                 : 'opacity-0 pointer-events-none'
@@ -87,7 +96,7 @@ const ConversationSearch = ({
                     <Search
                         onClick={() => setIsExpanded(true)}
                         className={cn(
-                            'absolute right-2 top-1/2 -translate-y-1/2 size-5 text-secondary-content cursor-pointer transition-opacity duration-200',
+                            'absolute right-2 top-1/2 -translate-y-1/2 size-5 text-secondary-content cursor-pointer transition-all duration-300 ease-in-out',
                             isExpanded
                                 ? 'opacity-0 pointer-events-none'
                                 : 'opacity-100'
@@ -96,7 +105,7 @@ const ConversationSearch = ({
                     <X
                         onClick={() => setIsExpanded(false)}
                         className={cn(
-                            'absolute right-3 top-1/2 -translate-y-1/2 size-5 text-secondary-content cursor-pointer transition-opacity duration-200',
+                            'absolute right-3 top-1/2 -translate-y-1/2 size-5 text-secondary-content cursor-pointer transition-all duration-300 ease-in-out',
                             isExpanded
                                 ? 'opacity-100'
                                 : 'opacity-0 pointer-events-none'

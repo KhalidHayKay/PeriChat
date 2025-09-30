@@ -1,4 +1,5 @@
 import FormatChatDate from '@/actions/format-chat-date';
+import { routes } from '@/config/routes';
 import { ConversationTypeEnum } from '@/enums/enums';
 import { cn } from '@/lib/utils';
 import { CheckCheck, FileIcon } from 'lucide-react';
@@ -18,11 +19,7 @@ const ConversationItem = ({
 }) => {
     return (
         <Link
-            to={
-                conversation.type === ConversationTypeEnum.GROUP
-                    ? route('conversation.group', conversation.typeId)
-                    : route('conversation.private', conversation.typeId)
-            }
+            to={routes.app.conversation(conversation.id)}
             className={cn(
                 'flex items-center gap-x-3 sm:gap-x-1 py-2 px-3 mobile:px-5 sm:px-3 rounded-md cursor-pointer transition',
                 'hover:bg-secondary/90',

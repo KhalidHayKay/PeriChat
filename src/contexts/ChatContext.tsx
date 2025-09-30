@@ -1,4 +1,4 @@
-import { fetchConversation } from '@/actions/conversation';
+import { fetchConversationSubjects } from '@/actions/conversation';
 import {
     messageCreated,
     messageUnreadIncremented,
@@ -18,6 +18,9 @@ interface ChatContextType {
     updateConversations: (
         updater: (prev: Conversation[]) => Conversation[]
     ) => void;
+    isLoadingConversation: boolean;
+    conversationNotFound: boolean;
+    hasConversationId: boolean;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -31,7 +34,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     const { conversationId } = useParams();
     const { on } = useEventBus();
 
-    // EventBus listeners for real-time updates
     useEffect(() => {
         const offCreated = on('message.created', (message: Message) =>
             messageCreated(message, setConversations)
@@ -50,12 +52,12 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         };
     }, [on]);
 
-    // Fetch conversations function
+    // Fetch conversations
     const fetchConversations = async () => {
         try {
             setLoading(true);
             setError(null);
-            const data = await fetchConversation();
+            const data = await fetchConversationSubjects();
             setConversations(data);
         } catch (error) {
             console.error('Failed to fetch conversations:', error);
@@ -69,7 +71,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    // Refresh conversations (can be called manually)
+    // Refresh conversations (manually)
     const refreshConversations = async () => {
         await fetchConversations();
     };
@@ -81,31 +83,37 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         setConversations(updater);
     };
 
-    // Fetch conversations on mount
     useEffect(() => {
         fetchConversations();
     }, []);
 
-    // Update selected conversation when route changes
     useEffect(() => {
         if (conversationId && conversations.length > 0) {
             const conversation = conversations.find(
                 (c) => c.id === Number(conversationId)
             );
             setSelectedConversation(conversation || null);
-        } else {
+        } else if (!conversationId) {
             setSelectedConversation(null);
         }
     }, [conversationId, conversations]);
 
-    // Manual setter for selected conversation (useful for programmatic selection)
     const handleSetSelectedConversation = (
         conversation: Conversation | null
     ) => {
         setSelectedConversation(conversation);
-        // You might want to navigate to the conversation route here
-        // navigate(`/chat/${conversation?.id || ''}`);
+        // Other logic like navigation to the conversation route goes here
     };
+
+    // const isTransitioning = prevConversationId !== conversationId;
+    const hasConversationId = !!conversationId;
+
+    console.log(hasConversationId, !selectedConversation, !loading);
+
+    const isLoadingConversation =
+        hasConversationId && !selectedConversation && loading;
+    const conversationNotFound =
+        hasConversationId && !selectedConversation && !loading;
 
     return (
         <ChatContext.Provider
@@ -117,6 +125,9 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
                 setSelectedConversation: handleSetSelectedConversation,
                 refreshConversations,
                 updateConversations,
+                isLoadingConversation,
+                conversationNotFound,
+                hasConversationId,
             }}
         >
             {children}

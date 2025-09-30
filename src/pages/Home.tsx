@@ -1,16 +1,11 @@
+import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
 import { useChatContext } from '@/contexts/ChatContext';
 import { MessageCircle } from 'lucide-react';
 
 const Home = () => {
     const { conversations, loading } = useChatContext();
 
-    if (loading) {
-        return (
-            <div className='size-full flex items-center justify-center'>
-                <div className='animate-spin h-8 w-8 border-2 border-primary-content border-t-transparent rounded-full' />
-            </div>
-        );
-    }
+    if (loading) return <HomeSkeleton />;
 
     return (
         <div className='size-full flex flex-col gap-y-4 items-center justify-center p-8 text-center'>

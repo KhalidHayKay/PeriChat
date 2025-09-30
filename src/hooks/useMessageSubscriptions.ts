@@ -1,7 +1,5 @@
-import handleIncomingSocketMessage from '@/actions/handle-incoming-socket-message';
 import useEventBus from '@/contexts/EventBus';
 import { ConversationTypeEnum } from '@/enums/enums';
-import { useEffect } from 'react';
 
 export const useMessageSubscriptions = (
     conversations: Conversation[],
@@ -26,30 +24,30 @@ export const useMessageSubscriptions = (
         return channel;
     };
 
-    useEffect(() => {
-        conversations.forEach((conversation) => {
-            console.log('listening to channel ' + getChannelName(conversation));
-            window.Echo.private(getChannelName(conversation))
-                .listen('SocketMessage', (e: { message: Message }) => {
-                    const message = e.message;
+    // useEffect(() => {
+    //     conversations.forEach((conversation) => {
+    //         console.log('listening to channel ' + getChannelName(conversation));
+    //         window.Echo.private(getChannelName(conversation))
+    //             .listen('SocketMessage', (e: { message: Message }) => {
+    //                 const message = e.message;
 
-                    handleIncomingSocketMessage(
-                        message,
-                        user,
-                        emit,
-                        selectedConversation
-                    );
-                })
-                .error((err: any) => {
-                    console.error(err);
-                });
-        });
+    //                 handleIncomingSocketMessage(
+    //                     message,
+    //                     user,
+    //                     emit,
+    //                     selectedConversation
+    //                 );
+    //             })
+    //             .error((err: any) => {
+    //                 console.error(err);
+    //             });
+    //     });
 
-        return () => {
-            conversations.forEach((conversation) => {
-                console.log('Leaving channel ' + getChannelName(conversation));
-                window.Echo.leave(getChannelName(conversation));
-            });
-        };
-    }, [conversations]);
+    //     return () => {
+    //         conversations.forEach((conversation) => {
+    //             console.log('Leaving channel ' + getChannelName(conversation));
+    //             window.Echo.leave(getChannelName(conversation));
+    //         });
+    //     };
+    // }, [conversations]);
 };

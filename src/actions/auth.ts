@@ -1,3 +1,4 @@
+import { routes } from '@/config/routes';
 import api from '@/lib/api';
 import { handleApiError } from '@/lib/handle-api-erros';
 
@@ -22,7 +23,7 @@ import { handleApiError } from '@/lib/handle-api-erros';
 
 export const register = async (credentials: SignUpCredentials) => {
     try {
-        const response = await api.post('/auth/register', credentials);
+        const response = await api.post(routes.api.auth.register, credentials);
         return response.data;
     } catch (error) {
         handleApiError(error);
@@ -31,7 +32,7 @@ export const register = async (credentials: SignUpCredentials) => {
 
 export const login = async (email: string, password: string) => {
     try {
-        const response = await api.post('/auth/login', {
+        const response = await api.post(routes.api.auth.login, {
             email,
             password,
         });

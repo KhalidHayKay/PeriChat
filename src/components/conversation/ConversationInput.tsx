@@ -1,196 +1,188 @@
-import { ConversationTypeEnum } from '@/enums/enums';
-import { cn } from '@/utils/utils';
+import { Button } from '@/components/ui/button';
 import {
-	Popover,
-	PopoverButton,
-	PopoverPanel,
-	Textarea,
-} from '@headlessui/react';
-import axios, { AxiosError } from 'axios';
-import EmojiPicker from 'emoji-picker-react';
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import { useSendMessage } from '@/hooks/useSendMessage';
+import { cn } from '@/lib/utils';
 import { Plus, Send, Smile } from 'lucide-react';
-import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import type { ChangeEvent, KeyboardEvent } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Textarea } from '../ui/textarea';
 import PresendPreview from './attachment/PresendPreview';
 
-const ConversationInput = ({
-	conversation,
-}: {
-	conversation: Conversation;
-}) => {
-	const input = useRef<HTMLTextAreaElement>();
-	const [value, setvalue] = useState('');
-	const [sending, setSending] = useState(false);
-	const [files, setFiles] = useState<Attachment[]>([]);
-	const [uploadProgress, setUploadProgress] = useState(0);
+const EmojiPicker = React.lazy(() => import('emoji-picker-react'));
 
-	const sendMessage = async () => {
-		if (sending) return;
+interface ConversationInputProps {
+    conversation: Conversation;
+}
 
-		if (value.trim() !== '' || files.length > 0) {
-			const formData = new FormData();
+const ConversationInput = ({ conversation }: ConversationInputProps) => {
+    const input = useRef<HTMLTextAreaElement>(null);
+    const [value, setValue] = useState('');
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [files, setFiles] = useState<Attachment[]>([]);
 
-			files.forEach((file) =>
-				formData.append('attachments[]', file.file)
-			);
-			formData.append('message', value);
+    const { send, sending, progress, error } = useSendMessage();
 
-			if (conversation.type === ConversationTypeEnum.PRIVATE) {
-				formData.append('receiver_id', `${conversation.typeId}`);
-			} else if (conversation.type === ConversationTypeEnum.GROUP) {
-				formData.append('group_id', `${conversation.typeId}`);
-			}
+    const handleSendMessage = async () => {
+        if (sending) return;
+        if (value.trim() === '' && files.length === 0) return;
 
-			setSending(true);
+        try {
+            await send(value, files, conversation);
+            // Reset form on successful send
+            setValue('');
+            setFiles([]);
+            // Clean up file URLs
+            files.forEach((file) => URL.revokeObjectURL(file.url));
+        } catch (error) {
+            console.error('Failed to send message:', error);
+            // Keep form data on error so user can retry
+        }
+    };
 
-			try {
-				const res = await axios.post(route('message.store'), formData, {
-					onUploadProgress: (ProgressEvent) => {
-						if (ProgressEvent.total) {
-							const progress = Math.round(
-								(ProgressEvent.loaded / ProgressEvent.total) *
-									100
-							);
-							// console.log('progress: ', progress);
-							setUploadProgress(progress);
-						}
-					},
-				});
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (value.trim() !== '' || files.length > 0) {
+                handleSendMessage();
+            }
+        }
+    };
 
-				setvalue('');
-				setSending(false);
-				setUploadProgress(0);
-				setFiles([]);
-			} catch (err) {
-				setFiles([]);
-				if (err instanceof AxiosError) {
-					console.log(err.response?.data);
-				}
-				console.log(err);
-			}
-		}
+    const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+        setValue(e.target.value);
+        setTimeout(adjustHeight, 10);
+    };
 
-		return;
-	};
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const selectedFiles = e.target.files;
+        if (!selectedFiles) return;
 
-	const handleKeyDown = (e: KeyboardEvent) => {
-		if (e.key === 'Enter' && !e.shiftKey) {
-			e.preventDefault();
-			if (value.trim() !== '') {
-				sendMessage();
-			}
-		}
-	};
+        const updatedFiles = [...selectedFiles].map((file) => ({
+            file,
+            url: URL.createObjectURL(file),
+        }));
 
-	const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-		setTimeout(() => {
-			adjustHeight();
-		}, 10);
-		setvalue(e.target.value);
-	};
+        setFiles((prev) => [...prev, ...updatedFiles]);
+    };
 
-	const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-		const selectedFiles = e.target.files;
+    const removeFile = (name: string) => {
+        setFiles((prevFiles) => {
+            const fileToRemove = prevFiles.find((f) => f.file.name === name);
+            if (fileToRemove) {
+                URL.revokeObjectURL(fileToRemove.url);
+            }
+            return prevFiles.filter((f) => f.file.name !== name);
+        });
+    };
 
-		if (!selectedFiles) return;
+    const adjustHeight = () => {
+        if (input.current) {
+            input.current.style.height = 'auto';
+            input.current.style.height = `${input.current.scrollHeight}px`;
+        }
+    };
 
-		const updatedFiles = [...selectedFiles].map((file) => {
-			return {
-				file,
-				url: URL.createObjectURL(file),
-			};
-		});
+    useEffect(() => {
+        adjustHeight();
+    }, [value]);
 
-		setFiles((prev) => [...prev, ...updatedFiles]);
-	};
+    useEffect(() => {
+        input.current?.focus();
+    }, [conversation]);
 
-	const removeFile = (name: string) => {
-		setFiles((prevFiles) => {
-			const fileToRemove = prevFiles.find((f) => f.file.name === name);
-			if (fileToRemove) {
-				URL.revokeObjectURL(fileToRemove.url); // Clean up URL
-			}
-			return prevFiles.filter((f) => f.file.name !== name);
-		});
-	};
+    // Cleanup file URLs on unmount
+    useEffect(() => {
+        return () => {
+            files.forEach((file) => URL.revokeObjectURL(file.url));
+        };
+    }, []);
 
-	const adjustHeight = () => {
-		setTimeout(() => {
-			if (input.current) {
-				input.current.style.height = 'auto';
-				input.current.style.height = `${input.current.scrollHeight}px`;
-			}
-		}, 100);
-	};
+    return (
+        <div className={cn('flex flex-col transition duration-500')}>
+            {files.length > 0 && (
+                <PresendPreview files={files} removeFile={removeFile} />
+            )}
 
-	useEffect(() => {
-		adjustHeight();
-	}, [value]);
+            <div className='flex items-center gap-x-2 p-4'>
+                <div className='flex-1 flex items-center rounded-full relative'>
+                    <Popover
+                        open={isPopoverOpen}
+                        onOpenChange={setIsPopoverOpen}
+                    >
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant='ghost'
+                                size='icon'
+                                disabled={sending}
+                                className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 p-0 hover:bg-transparent z-10'
+                            >
+                                <Smile className='size-5' />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                            side='top'
+                            align='start'
+                            className='w-auto p-0 border-0 shadow-lg'
+                            sideOffset={10}
+                        >
+                            {isPopoverOpen && (
+                                <EmojiPicker
+                                    lazyLoadEmojis
+                                    previewConfig={{ showPreview: false }}
+                                    onEmojiClick={(ev) => {
+                                        setValue(value + ev.emoji);
+                                        setIsPopoverOpen(false);
+                                    }}
+                                />
+                            )}
+                        </PopoverContent>
+                    </Popover>
 
-	useEffect(() => {
-		input.current?.focus();
-	}, [conversation]);
+                    <Textarea
+                        ref={input}
+                        autoFocus
+                        value={value}
+                        onKeyDown={handleKeyDown}
+                        onChange={handleChange}
+                        placeholder='Write a message'
+                        className='bg-transparent max-h-20 flex-1 border-none shadow-none resize-none custom-scrollbar pl-12 min-h-[2.5rem] py-2 focus-visible:ring-0'
+                        rows={1}
+                        disabled={sending}
+                    />
+                </div>
 
-	return (
-		<div className={cn('flex flex-col transition duration-500')}>
-			{files.length > 0 && (
-				<PresendPreview files={files} removeFile={removeFile} />
-			)}
+                <label
+                    className={cn(
+                        'size-10 flex items-center justify-center border border-secondary-content rounded-full cursor-pointer',
+                        sending && 'opacity-50 cursor-not-allowed'
+                    )}
+                >
+                    <input
+                        type='file'
+                        multiple
+                        onChange={handleFileChange}
+                        className='hidden'
+                        disabled={sending}
+                    />
+                    <Plus className='size-4' />
+                </label>
 
-			<div className='flex items-center gap-x-2 p-4'>
-				<div className='flex-1 flex rounded-full'>
-					<Popover className='relative flex-1'>
-						<PopoverButton>
-							<Smile className='absolute left-3 top-1/2 -translate-y-1/2 size-5 cursor-pointer' />
-						</PopoverButton>
-						<PopoverPanel
-							transition
-							// anchor='bottom'
-							className='absolute z-10 bottom-[110%] left-0 transition duration-200 ease-in-out'
-						>
-							<EmojiPicker
-								lazyLoadEmojis
-								previewConfig={{ showPreview: false }}
-								onEmojiClick={(ev) =>
-									setvalue(value + ev.emoji)
-								}
-							/>
-						</PopoverPanel>
-					</Popover>
-
-					<Textarea
-						ref={input as React.Ref<HTMLTextAreaElement>}
-						rows={1}
-						autoFocus
-						value={value}
-						onKeyDown={(e) => handleKeyDown(e as any)}
-						onChange={(e) => handleChange(e)}
-						placeholder='Write a message'
-						className='bg-transparent max-h-20 w-[90%] border-none focus:ring-0 float-right resize-none custom-scrollbar'
-					/>
-				</div>
-
-				<div
-					tabIndex={0}
-					className='size-10 flex items-center justify-center border border-secondary-content rounded-full relative'
-				>
-					<input
-						type='file'
-						multiple
-						onChange={handleFileChange}
-						className='absolute top-0 bottom-0 right-0 left-0 z-20 opacity-0 p-0'
-					/>
-					<Plus className='size-4' />
-				</div>
-				<button
-					disabled={value.trim() === '' && files.length === 0}
-					onClick={sendMessage}
-					className='size-10 flex items-center justify-center bg-periBlue disabled:bg-periBlue/50 rounded-full cursor-pointer disabled:cursor-auto'
-				>
-					<Send className='size-4 text-primary' />
-				</button>
-			</div>
-		</div>
-	);
+                <Button
+                    disabled={
+                        (value.trim() === '' && files.length === 0) || sending
+                    }
+                    onClick={handleSendMessage}
+                    className='size-10 p-0 bg-periBlue hover:bg-periBlue/90 disabled:bg-periBlue/50 rounded-full'
+                >
+                    <Send className='size-4 text-primary' />
+                </Button>
+            </div>
+        </div>
+    );
 };
 
 export default ConversationInput;

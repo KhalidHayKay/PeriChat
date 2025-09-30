@@ -1,3 +1,4 @@
+import { routes } from '@/config/routes';
 import api from '@/lib/api';
 import { handleApiError } from '@/lib/handle-api-erros';
 
@@ -13,26 +14,26 @@ export const sortConversations = (conversationsArray: Conversation[]) => {
     });
 };
 
-export const fetchConversation = async () => {
-    return handleRequest('conversation/subjects');
+export const fetchConversationSubjects = async () => {
+    return handleRequest(routes.api.conversation.subjects);
 };
 
 export const fetchAppUsers = async () => {
-    return handleRequest('conversation/new/users');
+    return handleRequest(routes.api.conversation.newUsers);
 };
 
 export const fetchPublicGroups = async () => {
-    return handleRequest('conversation/new/groups');
+    return handleRequest(routes.api.conversation.newGroups);
 };
 
 export const fetchUsersForNewGroup = async () => {
-    return handleRequest('conversation/new/group-users');
+    return handleRequest(routes.api.conversation.newGroupUsers);
 };
 
 const handleRequest = async (uri: string) => {
     try {
         const res = await api.get(uri);
-        return res.data.data;
+        return res.data;
     } catch (error) {
         handleApiError(error);
     }

@@ -13,7 +13,7 @@ export interface ApiResponse<T> {
 
 const api: AxiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
-    timeout: 10000,
+    timeout: 60 * 1000,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -22,7 +22,7 @@ const api: AxiosInstance = axios.create({
 // Request interceptor: attach token
 api.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('authToken');
 
         // Ensure headers exist
         config.headers = config.headers ?? {};
