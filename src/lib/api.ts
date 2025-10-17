@@ -1,3 +1,4 @@
+import { env } from '@/config/env';
 import type {
     AxiosInstance,
     AxiosResponse,
@@ -12,7 +13,7 @@ export interface ApiResponse<T> {
 }
 
 const api: AxiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+    baseURL: env.api.url,
     timeout: 60 * 1000,
     headers: {
         'Content-Type': 'application/json',

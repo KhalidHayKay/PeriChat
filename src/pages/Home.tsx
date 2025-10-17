@@ -1,9 +1,9 @@
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton';
-import { useChatContext } from '@/contexts/ChatContext';
+import { useConversationContext } from '@/contexts/ConversationContext';
 import { MessageCircle } from 'lucide-react';
 
 const Home = () => {
-    const { conversations, loading } = useChatContext();
+    const { conversations, loading } = useConversationContext();
 
     if (loading) return <HomeSkeleton />;
 

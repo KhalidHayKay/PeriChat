@@ -6,7 +6,7 @@ import ConversationHeaderSkeleton from '@/components/skeletons/ConversationHeade
 import ConversationInputSkeleton from '@/components/skeletons/ConversationInputSkeleton';
 import ConversationMessagesSkeleton from '@/components/skeletons/ConversationMessagesSkeleton';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { useChatContext } from '@/contexts/ChatContext';
+import { useConversationContext } from '@/contexts/ConversationContext';
 import { useMessages } from '@/hooks/useMessages';
 
 const Conversation = () => {
@@ -15,16 +15,10 @@ const Conversation = () => {
         isLoadingConversation,
         conversationNotFound,
         selectedConversation,
-    } = useChatContext();
-    const { messages, setMessages, error, loading } =
+        updateConversations,
+    } = useConversationContext();
+    const { messages, setMessages, refreshMessages, error, loading } =
         useMessages(selectedConversation);
-
-    // console.log(
-    //     isLoadingConversation,
-    //     conversationNotFound,
-    //     selectedConversation,
-    //     loading
-    // );
 
     if (isLoadingConversation) {
         return (
@@ -52,15 +46,20 @@ const Conversation = () => {
                 <ConversationMessages
                     messages={messages}
                     setMessages={setMessages}
+                    refreshMessages={refreshMessages}
                     loading={loading}
                     error={error}
-                    selectedConversation={selectedConversation}
+                    selectedConversation={selectedConversation as Conversation}
                     user={user}
+                    // onRetryMessage={() => console.log('retry')}
                 />
             </div>
 
             <ConversationInput
+                user={user}
                 conversation={selectedConversation as Conversation}
+                setMessages={setMessages}
+                updateConversations={updateConversations}
             />
         </>
     );

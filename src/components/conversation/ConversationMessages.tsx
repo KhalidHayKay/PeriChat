@@ -1,33 +1,32 @@
-import { isImage, isVideo } from '@/actions/file-check';
 import { loadOlderMessages } from '@/actions/message';
-import useEventBus from '@/contexts/EventBus';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import useEventBus from '@/contexts/AppEventsContext';
 import { Loader2 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ConversationMessagesError from '../errors/ConversationMessagesError';
 import ConversationMessagesSkeleton from '../skeletons/ConversationMessagesSkeleton';
 import DisplayModal from './attachment/DisplayModal';
-import MessageAttachment from './attachment/MessageAttachment';
+import MessageBubble from './MessageBubble';
 
 interface ConversationMessagesProps {
-    // From useMessages hook
     messages: Message[];
     setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+    refreshMessages: () => void;
     loading: boolean;
     error: string | null;
-    // Component specific props
-    selectedConversation: Conversation | null;
+    selectedConversation: Conversation;
     user: User;
+    onRetryMessage?: (message: Message & { tempId: string }) => void;
 }
 
 const ConversationMessages = ({
     messages,
     setMessages,
+    refreshMessages,
     loading,
     error,
     selectedConversation,
     user,
+    onRetryMessage,
 }: ConversationMessagesProps) => {
     const conversationCtrRef = useRef<HTMLDivElement | null>(null);
     const loadOlderMessageIntercept = useRef<HTMLDivElement | null>(null);
@@ -42,7 +41,6 @@ const ConversationMessages = ({
 
     const { emit } = useEventBus();
 
-    // Reset unread count
     useEffect(() => {
         if (
             selectedConversation?.unreadMessageCount &&
@@ -55,9 +53,8 @@ const ConversationMessages = ({
         }
     }, [selectedConversation, emit]);
 
-    // Load older messages using hook's function
     const handleLoadOlderMessages = useCallback(async () => {
-        if (noOlderMessages || loadingOlder || messages.length === 0) {
+        if (noOlderMessages || loadingOlder) {
             return;
         }
 
@@ -66,7 +63,10 @@ const ConversationMessages = ({
 
         try {
             const { messages: olderMessages, hasMore } =
-                await loadOlderMessages(lastMessage.id);
+                await loadOlderMessages(
+                    selectedConversation.id,
+                    lastMessage.id
+                );
 
             if (!hasMore) {
                 setNoOlderMessages(true);
@@ -77,7 +77,6 @@ const ConversationMessages = ({
                 throw new Error("'conversationCtrRef.current' is null");
             }
 
-            // Preserve scroll position
             const scrollHeight = conversationCtrRef.current.scrollHeight;
             const scrollTop = conversationCtrRef.current.scrollTop;
             const clientHeight = conversationCtrRef.current.clientHeight;
@@ -94,7 +93,7 @@ const ConversationMessages = ({
         messages,
         noOlderMessages,
         loadingOlder,
-        loadOlderMessages,
+        selectedConversation.id,
         setMessages,
     ]);
 
@@ -105,31 +104,27 @@ const ConversationMessages = ({
         []
     );
 
-    // Auto-scroll to bottom on conversation change
     useEffect(() => {
-        if (selectedConversation && !loading) {
-            setTimeout(() => {
-                if (conversationCtrRef.current) {
-                    conversationCtrRef.current.scrollTop =
-                        conversationCtrRef.current.scrollHeight;
-                }
-            }, 10);
-        }
+        setTimeout(() => {
+            if (conversationCtrRef.current) {
+                conversationCtrRef.current.scrollTop =
+                    conversationCtrRef.current.scrollHeight;
+            }
+        }, 10);
 
         setScrollFromBottom(0);
         setNoOlderMessages(false);
-    }, [selectedConversation, loading]);
+    }, []);
 
-    // Restore scroll position and setup intersection observer
     useEffect(() => {
-        if (conversationCtrRef.current && scrollFromBottom > 0) {
+        if (conversationCtrRef.current) {
             conversationCtrRef.current.scrollTop =
                 conversationCtrRef.current.scrollHeight -
                 conversationCtrRef.current.offsetHeight -
                 scrollFromBottom;
         }
 
-        if (noOlderMessages || loading) {
+        if (noOlderMessages) {
             return;
         }
 
@@ -144,34 +139,28 @@ const ConversationMessages = ({
         );
 
         if (loadOlderMessageIntercept.current) {
-            const timeout = setTimeout(() => {
-                if (loadOlderMessageIntercept.current) {
-                    observer.observe(loadOlderMessageIntercept.current);
-                }
+            setTimeout(() => {
+                observer.observe(
+                    loadOlderMessageIntercept.current as HTMLDivElement
+                );
             }, 100);
-
-            return () => {
-                clearTimeout(timeout);
-                observer.disconnect();
-            };
         }
 
-        return () => observer.disconnect();
-    }, [
-        messages,
-        loading,
-        noOlderMessages,
-        handleLoadOlderMessages,
-        scrollFromBottom,
-    ]);
+        return () => {
+            observer.disconnect();
+        };
+    }, [messages]);
 
-    // Loading state
     if (loading) return <ConversationMessagesSkeleton />;
 
-    // Error state
-    if (error) return <ConversationMessagesError error={error} />;
+    if (error)
+        return (
+            <ConversationMessagesError
+                error={error}
+                refresh={refreshMessages}
+            />
+        );
 
-    // Empty state
     if (messages.length === 0) {
         return (
             <div className='h-full flex items-center justify-center p-8'>
@@ -195,7 +184,6 @@ const ConversationMessages = ({
                 ref={conversationCtrRef}
                 className='max-h-full px-2 py-5 space-y-2 overflow-y-auto custom-scrollbar'
             >
-                {/* Load older messages indicator */}
                 <div
                     ref={loadOlderMessageIntercept}
                     className='flex justify-center py-2'
@@ -213,123 +201,14 @@ const ConversationMessages = ({
                     )}
                 </div>
 
-                {messages.map((message) => {
-                    const displayableAttachments = message.attachments?.filter(
-                        (att) => isImage(att) || isVideo(att)
-                    );
-
-                    const unDisplayableAttachments =
-                        message.attachments?.filter(
-                            (att) => !isImage(att) && !isVideo(att)
-                        );
-
-                    const hasText = message.message !== '';
-
-                    return (
-                        <div
-                            key={message.id}
-                            className={cn(
-                                'chat',
-                                message.senderId === user.id
-                                    ? 'chat-end'
-                                    : 'chat-start'
-                            )}
-                        >
-                            <div
-                                className={cn(
-                                    'chat-header flex items-center gap-x-1',
-                                    message.senderId === user.id
-                                        ? 'mr-1'
-                                        : 'ml-1'
-                                )}
-                            >
-                                {message.groupId && (
-                                    <div className='font-semibold inline'>
-                                        {message.sender.name !== user.name
-                                            ? message.sender.name
-                                            : 'You'}
-                                    </div>
-                                )}
-                                <time className='text-[0.8rem]'>
-                                    {format(
-                                        message.createdAt,
-                                        'MMM dd, hh:mm aa'
-                                    )}
-                                </time>
-                            </div>
-                            <div
-                                className={cn(
-                                    'size-full max-w-[90%] flex flex-col',
-                                    message.senderId === user.id
-                                        ? 'col-start-1 items-end'
-                                        : 'col-start-2'
-                                )}
-                            >
-                                <div
-                                    className={cn(
-                                        'chat-bubble max-w-full shadow-sm rounded-xl before:size-0',
-                                        message.senderId === user.id
-                                            ? 'bg-periBlue text-secondary'
-                                            : 'chat-bubble-primary',
-                                        message.attachments && !message.message
-                                            ? 'hidden'
-                                            : ''
-                                    )}
-                                >
-                                    <p>{message.message}</p>
-                                </div>
-                                {displayableAttachments &&
-                                    displayableAttachments.length > 0 && (
-                                        <div
-                                            className={cn(
-                                                'mt-1 grid w-fit',
-                                                displayableAttachments.length >
-                                                    1
-                                                    ? 'grid-cols-2 mobile:grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 justify-end gap-3'
-                                                    : 'grid-cols-1',
-                                                message.senderId === user.id
-                                                    ? ' [direction:rtl]'
-                                                    : '[direction:ltr]'
-                                            )}
-                                        >
-                                            <MessageAttachment
-                                                attachments={
-                                                    displayableAttachments as ServerAttachment[]
-                                                }
-                                                senderIsUser={
-                                                    message.senderId === user.id
-                                                }
-                                                onAttachmentClick={(
-                                                    index: number
-                                                ) =>
-                                                    onAttachmentClick(
-                                                        displayableAttachments as ServerAttachment[],
-                                                        index
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                    )}
-                                {unDisplayableAttachments &&
-                                    unDisplayableAttachments.length > 0 && (
-                                        <div
-                                            className={cn('mt-1 grid gap-y-2')}
-                                        >
-                                            <MessageAttachment
-                                                senderIsUser={
-                                                    message.senderId === user.id
-                                                }
-                                                attachments={
-                                                    unDisplayableAttachments as ServerAttachment[]
-                                                }
-                                                hasText={hasText}
-                                            />
-                                        </div>
-                                    )}
-                            </div>
-                        </div>
-                    );
-                })}
+                {messages.map((message) => (
+                    <MessageBubble
+                        key={message.id}
+                        message={message}
+                        onAttachmentClick={onAttachmentClick}
+                        user={user}
+                    />
+                ))}
             </div>
         </>
     );

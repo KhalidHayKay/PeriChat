@@ -16,26 +16,27 @@ export const routes = {
         getUser: (id: string) => `/api/user/${id}`,
         conversation: {
             subjects: '/conversation/subjects',
-            messages: (conversationId: number) =>
-                `/conversation/${conversationId}`,
-            // attachments: (conversationId: string) =>
-            //     `/conversation/${conversationId}/attachments`,
             newUsers: '/conversation/new/users',
             newGroups: '/conversation/new/groups',
             newGroupUsers: '/conversation/new/group-users',
         },
         message: {
-            send: '/message/send',
-            loadOlder: (lastMessageId: number) =>
-                `/message/load-older/${lastMessageId}`,
+            load: (conversationId: number) =>
+                `/messaging/conversation/${conversationId}`,
+            loadOlder: (conversationId: number, lastMessageId: number) =>
+                `/messaging/conversation/${conversationId}/older/${lastMessageId}`,
+            send: (conversationId: number) =>
+                `/messaging/conversation/${conversationId}/send`,
+
+            unread: (conversationId: number, messageId: number) =>
+                `/messaging/conversation/${conversationId}/message/${messageId}/unread/increment`,
+            read: (conversationId: number) =>
+                `/messaging/conversation/${conversationId}/unread/reset`,
         },
         attachments: {
             download: (attachmentId: number) =>
                 `/attachment/download/${attachmentId}`,
         },
-        search: {
-            users: '/search/users',
-            messages: '/search/messages',
-        },
     },
+    broadcast: '/broadcasting/auth',
 };

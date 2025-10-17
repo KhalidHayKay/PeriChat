@@ -1,23 +1,28 @@
+import { RotateCcw } from 'lucide-react';
 import { Button } from '../ui/button';
 
-const ConversationMessagesError = ({ error }: { error: string }) => {
+const ConversationMessageError = ({
+    error,
+    refresh,
+}: {
+    error: string;
+    refresh: () => void;
+}) => {
     return (
-        <div className='h-full flex items-center justify-center p-8'>
-            <div className='text-center space-y-4'>
-                <p className='text-destructive'>
-                    {/* Failed to load messages */}
-                    {error}
-                </p>
+        <div className='h-full flex items-center justify-center'>
+            <div className='px-3 py-8 text-center space-y-4'>
+                <p className='text-periRed text-sm'>{error}</p>
                 <Button
                     variant='outline'
-                    onClick={() => window.location.reload()}
-                    size='sm'
+                    size='icon'
+                    onClick={refresh}
+                    className='h-8 w-8 cursor-pointer hover:bg-secondary'
                 >
-                    Retry
+                    <RotateCcw className='h-4 w-4' />
                 </Button>
             </div>
         </div>
     );
 };
 
-export default ConversationMessagesError;
+export default ConversationMessageError;

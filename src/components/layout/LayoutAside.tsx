@@ -1,10 +1,11 @@
 import ConversationItem from '@/components/conversation/ConversationItem';
 import ConversationSearch from '@/components/ConversationSearch';
 import { Button } from '@/components/ui/button';
-import { useChatContext } from '@/contexts/ChatContext';
-import useOnlineUsers from '@/contexts/OnlineUsersContext';
+import { useConversationContext } from '@/contexts/ConversationContext';
+import { useOnlineUsers } from '@/contexts/OnlineUsersContext';
 import { ConversationTypeEnum } from '@/enums/enums';
 import { useConversations } from '@/hooks/useConversations';
+import { useMessageSubscriptions } from '@/hooks/useMessageSubscriptions';
 import { capitalize, cn } from '@/lib/utils';
 import ConversationSubjectError from '../errors/ConversationSubjectsError';
 import NewConversationDropdown from '../new-conversation/NewConversationDropdown';
@@ -13,18 +14,18 @@ import ConversationSubjectsSkeleton from '../skeletons/ConversationSubjectSkelet
 type filterType = 'all' | 'private' | 'group';
 
 const LayoutAside = ({ user }: { user: User }) => {
+    const { checkIfUserIsOnline } = useOnlineUsers();
     const {
         hasConversationId,
         selectedConversation,
         loading,
         error,
         refreshConversations,
-    } = useChatContext();
-    const { checkIfUserIsOnline } = useOnlineUsers();
-    const { local, sorted, filter, setFilter, searchText, setSearchText } =
+    } = useConversationContext();
+    const { sorted, filter, setFilter, searchText, setSearchText } =
         useConversations();
 
-    // useMessageSubscriptions(local, user, selectedConversation);
+    useMessageSubscriptions(user);
 
     const FilterButton = ({ filterValue }: { filterValue: filterType }) => (
         <Button

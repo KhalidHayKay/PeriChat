@@ -1,15 +1,15 @@
 import { createContext, useContext, useRef } from 'react';
 
-type EventBusDataTypes = {
+type AppEventDataTypes = {
     emit: (name: string, ...data: any) => void;
     on: (name: string, cb: (...args: any) => void) => () => void;
 };
 
-const EventBusContext = createContext<EventBusDataTypes>(
-    {} as EventBusDataTypes
+const AppEventContext = createContext<AppEventDataTypes>(
+    {} as AppEventDataTypes
 );
 
-export const EventBusProvider = ({ children }: { children: any }) => {
+export const AppEventProvider = ({ children }: { children: any }) => {
     const events = useRef<{ [key: string]: any[] }>({});
 
     const emit = (name: string, ...data: any) => {
@@ -32,18 +32,20 @@ export const EventBusProvider = ({ children }: { children: any }) => {
     };
 
     return (
-        <EventBusContext.Provider value={{ emit, on }}>
+        <AppEventContext.Provider value={{ emit, on }}>
             {children}
-        </EventBusContext.Provider>
+        </AppEventContext.Provider>
     );
 };
 
-const useEventBus = () => {
-    const context = useContext(EventBusContext);
+const useAppEventContext = () => {
+    const context = useContext(AppEventContext);
     if (context === undefined) {
-        throw new Error('useChatContext must be used within a ChatProvider');
+        throw new Error(
+            'useConversationContext must be used within a ConversationProvider'
+        );
     }
     return context;
 };
 
-export default useEventBus;
+export default useAppEventContext;

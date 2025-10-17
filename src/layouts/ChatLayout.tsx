@@ -1,12 +1,12 @@
 import LayoutAside from '@/components/layout/LayoutAside';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { useChatContext } from '@/contexts/ChatContext';
+import { useConversationContext } from '@/contexts/ConversationContext';
 import { cn } from '@/lib/utils';
 import { Outlet } from 'react-router';
 
 const ChatLayout = () => {
     const { user } = useAuthContext();
-    const { selectedConversation } = useChatContext();
+    const { selectedConversation } = useConversationContext();
 
     return (
         <div className='min-h-screen bg-secondary'>

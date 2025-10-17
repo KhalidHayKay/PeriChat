@@ -14,11 +14,19 @@ import PresendPreview from './attachment/PresendPreview';
 
 const EmojiPicker = React.lazy(() => import('emoji-picker-react'));
 
-interface ConversationInputProps {
+const ConversationInput = ({
+    conversation,
+    user,
+    setMessages,
+    updateConversations,
+}: {
     conversation: Conversation;
-}
-
-const ConversationInput = ({ conversation }: ConversationInputProps) => {
+    user: User;
+    setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+    updateConversations: (
+        updater: (prev: Conversation[]) => Conversation[]
+    ) => void;
+}) => {
     const input = useRef<HTMLTextAreaElement>(null);
     const [value, setValue] = useState('');
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -30,16 +38,51 @@ const ConversationInput = ({ conversation }: ConversationInputProps) => {
         if (sending) return;
         if (value.trim() === '' && files.length === 0) return;
 
+        // const tempMsg = createTempMessage(value, files, conversation, user);
+
+        // Optimistic update
+        // setMessages((prev) => [...prev, tempMsg]);
+        // updateConversations((prev) =>
+        //     prev.map((c) => {
+        //         if (!messageMatchesConversation(c, tempMsg)) return c;
+
+        //         return {
+        //             ...c,
+        //             lastMessage: tempMsg.message,
+        //             lastMessageDate: tempMsg.createdAt,
+        //             lastMessageSenderId: tempMsg.senderId,
+        //             lastMessageAttachmentCount:
+        //                 tempMsg.attachments?.length ?? 0,
+        //         };
+        //     })
+        // );
+
         try {
-            await send(value, files, conversation);
-            // Reset form on successful send
+            const message = await send(value, files, conversation);
+
+            // Replace the temp message with the real one
+            // setMessages((prev) =>
+            //     prev.map((m) =>
+            //         (m as any).tempId === tempMsg.tempId
+            //             ? { ...message, status: 'delivered' }
+            //             : m
+            //     )
+            // );
+
             setValue('');
             setFiles([]);
-            // Clean up file URLs
             files.forEach((file) => URL.revokeObjectURL(file.url));
         } catch (error) {
             console.error('Failed to send message:', error);
-            // Keep form data on error so user can retry
+
+            // Mark temporary message as failed
+            // setMessages((prev) =>
+            //     prev.map((m) =>
+            //         (m as any).tempId === tempMsg.tempId
+            //             ? { ...m, status: 'failed' }
+            //             : m
+            //     )
+            // );
         }
     };
 

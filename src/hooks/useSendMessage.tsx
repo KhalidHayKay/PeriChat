@@ -1,4 +1,5 @@
 import { sendMessage } from '@/actions/message';
+import { ConversationTypeEnum } from '@/enums/enums';
 import { useCallback, useState } from 'react';
 
 export const useSendMessage = () => {
@@ -17,13 +18,23 @@ export const useSendMessage = () => {
             setProgress(null);
 
             try {
-                const res = await sendMessage(
-                    messageText,
-                    attachments,
-                    conversation,
-                    (p) => setProgress(p)
+                const data = new FormData();
+
+                attachments.forEach((file) =>
+                    data.append('attachments[]', file.file)
                 );
-                console.log(res);
+
+                data.append('message', messageText);
+
+                if (conversation.type === ConversationTypeEnum.PRIVATE) {
+                    data.append('receiver_id', `${conversation.typeId}`);
+                } else if (conversation.type === ConversationTypeEnum.GROUP) {
+                    data.append('group_id', `${conversation.typeId}`);
+                }
+
+                const res = await sendMessage(data, conversation.id, (p) =>
+                    setProgress(p)
+                );
                 return res;
             } catch (err) {
                 setError(

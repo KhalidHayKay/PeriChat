@@ -1,6 +1,6 @@
 // hooks/useMessages.ts
 import { fetchMessages } from '@/actions/message';
-import useEventBus from '@/contexts/EventBus';
+import useEventBus from '@/contexts/AppEventsContext';
 import { ConversationTypeEnum } from '@/enums/enums';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -19,7 +19,7 @@ export const useMessages = (
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const { on } = useEventBus();
+    const { on, emit } = useEventBus();
 
     // Fetch messages for current conversation
     const fetchMessagesForConversation = useCallback(
@@ -28,9 +28,9 @@ export const useMessages = (
             setError(null);
 
             try {
-                const result = await fetchMessages(conversationId);
-                if (result.messages) {
-                    setMessages(result.messages.reverse());
+                const { data } = await fetchMessages(conversationId);
+                if (data) {
+                    setMessages(data.reverse());
                 } else {
                     setMessages([]);
                 }

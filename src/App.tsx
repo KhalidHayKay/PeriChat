@@ -1,9 +1,10 @@
 import { BrowserRouter, Route, Routes } from 'react-router';
 import './App.css';
 import ProtectedRoute from './components/routes/ProtectedRoute';
+import { AppEventProvider } from './contexts/AppEventsContext';
 import { AuthProvider } from './contexts/AuthContext';
-import { ChatProvider } from './contexts/ChatContext';
-import { EventBusProvider } from './contexts/EventBus';
+import { ConversationProvider } from './contexts/ConversationContext';
+import { EchoProvider } from './contexts/EchoContext';
 import { OnlineUsersProvider } from './contexts/OnlineUsersContext';
 import AuthLayout from './layouts/AuthLayout';
 import ChatLayout from './layouts/ChatLayout';
@@ -20,13 +21,15 @@ function App() {
                     <Route
                         element={
                             <ProtectedRoute>
-                                <OnlineUsersProvider>
-                                    <EventBusProvider>
-                                        <ChatProvider>
-                                            <ChatLayout />
-                                        </ChatProvider>
-                                    </EventBusProvider>
-                                </OnlineUsersProvider>
+                                <EchoProvider>
+                                    <OnlineUsersProvider>
+                                        <AppEventProvider>
+                                            <ConversationProvider>
+                                                <ChatLayout />
+                                            </ConversationProvider>
+                                        </AppEventProvider>
+                                    </OnlineUsersProvider>
+                                </EchoProvider>
                             </ProtectedRoute>
                         }
                     >

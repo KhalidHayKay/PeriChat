@@ -1,53 +1,112 @@
-import useEventBus from '@/contexts/EventBus';
+import { messageMatchesConversation } from '@/actions/helpers';
+import useAppEventContext from '@/contexts/AppEventsContext';
+import { useConversationContext } from '@/contexts/ConversationContext';
+import { useEcho } from '@/contexts/EchoContext';
 import { ConversationTypeEnum } from '@/enums/enums';
+import { useEffect, useMemo, useRef } from 'react';
 
-export const useMessageSubscriptions = (
-    conversations: Conversation[],
-    user: User,
-    selectedConversation: Conversation | null
-) => {
-    if (!selectedConversation) {
-        return;
+const getChannelName = (conversation: Conversation, userId: number) => {
+    if (conversation.type === ConversationTypeEnum.PRIVATE) {
+        return `message.private.${[userId, conversation.typeId]
+            .sort((a, b) => a - b)
+            .join('-')}`;
     }
+    return `message.group.${conversation.typeId}`;
+};
 
-    const { emit } = useEventBus();
+export const useMessageSubscriptions = (user: User) => {
+    const { echo, isConnected } = useEcho();
+    const { conversations, updateConversations } = useConversationContext();
+    const { emit } = useAppEventContext();
 
-    const getChannelName = (conversation: Conversation) => {
-        let channel = `message.group.${conversation.typeId}`;
+    // Track subscribed channels to avoid re-subscribing
+    const subscribedChannelsRef = useRef<Set<string>>(new Set());
 
-        if (conversation.type === ConversationTypeEnum.PRIVATE) {
-            channel = `message.private.${[user.id, conversation.typeId]
-                .sort((a, b) => a - b)
-                .join('-')}`;
-        }
+    // Memoize conversation signatures to prevent unnecessary re-subscriptions
+    // Only changes when conversations array changes
+    const conversationSignature = useMemo(() => {
+        return conversations
+            .map((c) => `${c.id}-${c.type}-${c.typeId}`)
+            .sort()
+            .join('|');
+    }, [conversations]);
 
-        return channel;
-    };
+    useEffect(() => {
+        if (!echo || !isConnected || conversations.length === 0) return;
 
-    // useEffect(() => {
-    //     conversations.forEach((conversation) => {
-    //         console.log('listening to channel ' + getChannelName(conversation));
-    //         window.Echo.private(getChannelName(conversation))
-    //             .listen('SocketMessage', (e: { message: Message }) => {
-    //                 const message = e.message;
+        const currentChannels = new Set<string>();
+        const channelsToSubscribe: string[] = [];
 
-    //                 handleIncomingSocketMessage(
-    //                     message,
-    //                     user,
-    //                     emit,
-    //                     selectedConversation
-    //                 );
-    //             })
-    //             .error((err: any) => {
-    //                 console.error(err);
-    //             });
-    //     });
+        // Identify which channels we need
+        conversations.forEach((conversation) => {
+            const channelName = getChannelName(conversation, user.id);
+            currentChannels.add(channelName);
 
-    //     return () => {
-    //         conversations.forEach((conversation) => {
-    //             console.log('Leaving channel ' + getChannelName(conversation));
-    //             window.Echo.leave(getChannelName(conversation));
-    //         });
-    //     };
-    // }, [conversations]);
+            // Only subscribe if not already subscribed
+            if (!subscribedChannelsRef.current.has(channelName)) {
+                channelsToSubscribe.push(channelName);
+            }
+        });
+
+        // Subscribe to new channels
+        channelsToSubscribe.forEach((channelName) => {
+            // console.log(`[MessageSub] Subscribing to: ${channelName}`);
+
+            echo.private(channelName)
+                .listen('MessageSent', (e: { message: Message }) => {
+                    const message = e.message;
+
+                    emit('message.created', message);
+                    updateConversations((prev) =>
+                        prev.map((c) => {
+                            if (!messageMatchesConversation(c, message))
+                                return c;
+
+                            return {
+                                ...c,
+                                lastMessage: message.message,
+                                lastMessageDate: message.createdAt,
+                                lastMessageSenderId: message.senderId,
+                                lastMessageAttachmentCount:
+                                    message.attachments?.length ?? 0,
+                            };
+                        })
+                    );
+
+                    if (message.senderId !== user.id) {
+                        emit('unread.increment', message);
+                    }
+                })
+                .error((error: any) => {
+                    console.error(`Error on channel ${channelName}:`, error);
+                });
+
+            subscribedChannelsRef.current.add(channelName);
+        });
+
+        // Unsubscribe from channels no longer needed
+        const channelsToUnsubscribe = Array.from(
+            subscribedChannelsRef.current
+        ).filter((channel) => !currentChannels.has(channel));
+
+        channelsToUnsubscribe.forEach((channelName) => {
+            // console.log(`[MessageSub] Unsubscribing from: ${channelName}`);
+            echo.leave(channelName);
+            subscribedChannelsRef.current.delete(channelName);
+        });
+
+        return () => {
+            subscribedChannelsRef.current.forEach((channelName) => {
+                echo.leave(channelName);
+            });
+            subscribedChannelsRef.current.clear();
+        };
+    }, [
+        echo,
+        isConnected,
+        conversationSignature,
+        user.id,
+        updateConversations,
+        emit,
+    ]);
 };

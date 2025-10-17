@@ -1,37 +1,30 @@
 import { sortConversations } from '@/actions/conversation';
-import { useChatContext } from '@/contexts/ChatContext';
-import { useEffect, useState } from 'react';
+import { useConversationContext } from '@/contexts/ConversationContext';
+import { useMemo, useState } from 'react';
 
 export function useConversations() {
-    const { conversations } = useChatContext();
-    const [local, setLocal] = useState<Conversation[]>([]);
-    const [sorted, setSorted] = useState<Conversation[]>([]);
     const [filter, setFilter] = useState<'all' | 'private' | 'group'>('all');
     const [searchText, setSearchText] = useState('');
+    const { conversations } = useConversationContext();
 
-    useEffect(() => {
-        let filtered = [...conversations];
+    // Combine filtering and sorting in one memoized operation
+    const sorted = useMemo(() => {
+        let filtered = conversations;
 
         if (filter !== 'all') {
             filtered = filtered.filter((c) => c.type === filter);
         }
 
-        if (searchText !== '') {
+        if (searchText) {
             filtered = filtered.filter((c) =>
                 c.name.toLowerCase().includes(searchText.toLowerCase())
             );
         }
 
-        setLocal(filtered);
-    }, [filter, searchText, conversations]);
-
-    useEffect(() => {
-        setSorted(sortConversations(local));
-    }, [local]);
+        return sortConversations(filtered);
+    }, [conversations, filter, searchText]);
 
     return {
-        local,
-        setLocal,
         sorted,
         filter,
         setFilter,

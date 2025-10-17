@@ -30,10 +30,22 @@ export const fetchUsersForNewGroup = async () => {
     return handleRequest(routes.api.conversation.newGroupUsers);
 };
 
+export const increment = (conversationId: number, messageId: number) => {
+    api.post(routes.api.message.unread(conversationId, messageId)).catch(
+        (err) => console.error(err)
+    );
+};
+
+export const resetUnread = async (conversationId: number) => {
+    api.post(routes.api.message.read(conversationId)).catch((err) =>
+        console.error(err)
+    );
+};
+
 const handleRequest = async (uri: string) => {
     try {
         const res = await api.get(uri);
-        return res.data;
+        return res.data.data;
     } catch (error) {
         handleApiError(error);
     }

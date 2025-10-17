@@ -1,14 +1,19 @@
 import { fetchConversationSubjects } from '@/actions/conversation';
 import {
-    messageCreated,
-    messageUnreadIncremented,
-    messageUnreadReset,
-} from '@/actions/event-bus-actions';
-import useEventBus from '@/contexts/EventBus';
-import { createContext, useContext, useEffect, useState } from 'react';
+    incrementUnreadMessageCount,
+    resetUnreadMessageCount,
+} from '@/actions/message-event';
+import useEventBus from '@/contexts/AppEventsContext';
+import {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useState,
+} from 'react';
 import { useParams } from 'react-router';
 
-interface ChatContextType {
+interface ConversationContextType {
     conversations: Conversation[];
     selectedConversation: Conversation | null;
     loading: boolean;
@@ -23,34 +28,43 @@ interface ChatContextType {
     hasConversationId: boolean;
 }
 
-const ChatContext = createContext<ChatContextType | undefined>(undefined);
+const ConversationContext = createContext<ConversationContextType | undefined>(
+    undefined
+);
 
-export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
+export const ConversationProvider = ({
+    children,
+}: {
+    children: React.ReactNode;
+}) => {
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [selectedConversation, setSelectedConversation] =
         useState<Conversation | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    // hasSearchedForConversation here is more like "Has resolved selected conversation"
+    const [hasSearchedForConversation, setHasSearchedForConversation] =
+        useState(false);
     const { conversationId } = useParams();
     const { on } = useEventBus();
 
     useEffect(() => {
-        const offCreated = on('message.created', (message: Message) =>
-            messageCreated(message, setConversations)
-        );
-        const offIncrement = on('unread.increment', (message: Message) =>
-            messageUnreadIncremented(message, setConversations)
-        );
+        const offIncrement = on('unread.increment', (message: Message) => {
+            {
+                if (Number(conversationId) === message.conversationId) return;
+
+                incrementUnreadMessageCount(message, setConversations);
+            }
+        });
         const offReset = on('unread.reset', (conversation: Conversation) =>
-            messageUnreadReset(conversation, setConversations)
+            resetUnreadMessageCount(conversation, setConversations)
         );
 
         return () => {
-            offCreated();
             offIncrement();
             offReset();
         };
-    }, [on]);
+    }, [on, conversationId]);
 
     // Fetch conversations
     const fetchConversations = async () => {
@@ -77,24 +91,41 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     // Update conversations helper (for external updates)
-    const updateConversations = (
-        updater: (prev: Conversation[]) => Conversation[]
-    ) => {
-        setConversations(updater);
-    };
+    const updateConversations = useCallback(
+        (updater: (prev: Conversation[]) => Conversation[]) => {
+            setConversations(updater);
+        },
+        []
+    );
 
     useEffect(() => {
         fetchConversations();
     }, []);
 
+    // Handle conversation selection when conversationId or conversations change
     useEffect(() => {
-        if (conversationId && conversations.length > 0) {
+        if (!conversationId) {
+            setSelectedConversation(null);
+            setHasSearchedForConversation(false);
+            return;
+        }
+
+        // Reset search flag when conversationId changes
+        setHasSearchedForConversation(false);
+
+        // Only try to find conversation if we have data loaded
+        if (conversations.length > 0) {
             const conversation = conversations.find(
                 (c) => c.id === Number(conversationId)
             );
-            setSelectedConversation(conversation || null);
-        } else if (!conversationId) {
-            setSelectedConversation(null);
+
+            // Only update if the conversation actually changed (by ID)
+            setSelectedConversation((prev) => {
+                if (!conversation) return null;
+                if (prev?.id === conversation.id) return prev;
+                return conversation;
+            });
+            setHasSearchedForConversation(true);
         }
     }, [conversationId, conversations]);
 
@@ -102,21 +133,23 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         conversation: Conversation | null
     ) => {
         setSelectedConversation(conversation);
-        // Other logic like navigation to the conversation route goes here
     };
 
-    // const isTransitioning = prevConversationId !== conversationId;
     const hasConversationId = !!conversationId;
 
-    console.log(hasConversationId, !selectedConversation, !loading);
-
+    // Show loading when we have a conversationId but haven't finished searching
     const isLoadingConversation =
-        hasConversationId && !selectedConversation && loading;
+        hasConversationId && (!hasSearchedForConversation || loading);
+
+    // Only show "not found" when we've actually searched and didn't find it
     const conversationNotFound =
-        hasConversationId && !selectedConversation && !loading;
+        hasConversationId &&
+        hasSearchedForConversation &&
+        !selectedConversation &&
+        !loading;
 
     return (
-        <ChatContext.Provider
+        <ConversationContext.Provider
             value={{
                 conversations,
                 selectedConversation,
@@ -131,14 +164,16 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
             }}
         >
             {children}
-        </ChatContext.Provider>
+        </ConversationContext.Provider>
     );
 };
 
-export const useChatContext = () => {
-    const context = useContext(ChatContext);
+export const useConversationContext = () => {
+    const context = useContext(ConversationContext);
     if (context === undefined) {
-        throw new Error('useChatContext must be used within a ChatProvider');
+        throw new Error(
+            'useConversationContext must be used within a ConversationProvider'
+        );
     }
     return context;
 };
