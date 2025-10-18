@@ -8,7 +8,9 @@ import {
 import { env } from '@/config/env';
 import { capitalize, cn } from '@/lib/utils';
 import { Download, File, PlayCircleIcon } from 'lucide-react';
+
 import { Fragment } from 'react/jsx-runtime';
+
 import { AudioPlayer } from './AudioPlayer';
 
 const MessageAttachment = ({
@@ -30,7 +32,9 @@ const MessageAttachment = ({
                 {isImage(attachment) && (
                     <div
                         onClick={() => {
-                            onAttachmentClick && onAttachmentClick(i);
+                            if (onAttachmentClick) {
+                                onAttachmentClick(i);
+                            }
                         }}
                         className='size-[90px] mobile:size-[110px] md:size-[130px] lg:size-[150px] shadow-md hover:shadow-lg rounded-md overflow-hidden cursor-pointer message-image-hover-effect'
                     >

@@ -12,10 +12,11 @@ import { routes } from '@/config/routes';
 import { useAuthContext } from '@/contexts/AuthContext';
 import useAuth from '@/hooks/useAuth';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Link, useNavigate } from 'react-router';
+
 import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router';
 import * as z from 'zod';
 
 const registerSchema = z

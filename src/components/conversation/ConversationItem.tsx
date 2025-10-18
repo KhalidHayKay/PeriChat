@@ -3,7 +3,9 @@ import { routes } from '@/config/routes';
 import { ConversationTypeEnum } from '@/enums/enums';
 import { cn } from '@/lib/utils';
 import { CheckCheck, FileIcon } from 'lucide-react';
+
 import { Link } from 'react-router';
+
 import Avatar from '../Avatar';
 
 const ConversationItem = ({

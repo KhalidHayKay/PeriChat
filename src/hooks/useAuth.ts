@@ -1,5 +1,6 @@
 // hooks/useAuth.ts - Focus on auth operations only
 import { useState } from 'react';
+
 import { login, register } from '../actions/auth';
 
 const useAuth = () => {

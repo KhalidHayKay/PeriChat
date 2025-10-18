@@ -7,18 +7,21 @@ import {
 import { useSendMessage } from '@/hooks/useSendMessage';
 import { cn } from '@/lib/utils';
 import { Plus, Send, Smile } from 'lucide-react';
+
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
+
 import { Textarea } from '../ui/textarea';
+
 import PresendPreview from './attachment/PresendPreview';
 
 const EmojiPicker = React.lazy(() => import('emoji-picker-react'));
 
 const ConversationInput = ({
     conversation,
-    user,
-    setMessages,
-    updateConversations,
+    // user,
+    // setMessages,
+    // updateConversations,
 }: {
     conversation: Conversation;
     user: User;
@@ -32,7 +35,7 @@ const ConversationInput = ({
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [files, setFiles] = useState<Attachment[]>([]);
 
-    const { send, sending, progress, error } = useSendMessage();
+    const { send, sending } = useSendMessage();
 
     const handleSendMessage = async () => {
         if (sending) return;
@@ -58,7 +61,8 @@ const ConversationInput = ({
         // );
 
         try {
-            const message = await send(value, files, conversation);
+            // const message =
+            await send(value, files, conversation);
 
             // Replace the temp message with the real one
             // setMessages((prev) =>

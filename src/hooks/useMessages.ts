@@ -19,7 +19,7 @@ export const useMessages = (
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const { on, emit } = useEventBus();
+    const { on } = useEventBus();
 
     // Fetch messages for current conversation
     const fetchMessagesForConversation = useCallback(

@@ -1,9 +1,12 @@
 import { loadOlderMessages } from '@/actions/message';
 import useEventBus from '@/contexts/AppEventsContext';
 import { Loader2 } from 'lucide-react';
+
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+
 import ConversationMessagesError from '../errors/ConversationMessagesError';
 import ConversationMessagesSkeleton from '../skeletons/ConversationMessagesSkeleton';
+
 import DisplayModal from './attachment/DisplayModal';
 import MessageBubble from './MessageBubble';
 
@@ -26,7 +29,7 @@ const ConversationMessages = ({
     error,
     selectedConversation,
     user,
-    onRetryMessage,
+    // onRetryMessage,
 }: ConversationMessagesProps) => {
     const conversationCtrRef = useRef<HTMLDivElement | null>(null);
     const loadOlderMessageIntercept = useRef<HTMLDivElement | null>(null);

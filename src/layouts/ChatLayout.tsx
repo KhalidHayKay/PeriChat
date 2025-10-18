@@ -13,7 +13,7 @@ const ChatLayout = () => {
             <div
                 className={cn(
                     'flex h-screen sm:p-2 overflow-hidden',
-                    !!selectedConversation ? 'gap-x-0 sm:gap-x-2' : 'sm:gap-x-2'
+                    selectedConversation ? 'gap-x-0 sm:gap-x-2' : 'sm:gap-x-2'
                 )}
             >
                 <LayoutAside user={user} />

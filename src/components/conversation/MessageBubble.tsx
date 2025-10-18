@@ -1,7 +1,7 @@
 import { isImage, isVideo } from '@/actions/file-check';
+import { format } from 'date-fns';
 
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 import MessageAttachment from './attachment/MessageAttachment';
 
 interface MessageBubbleProps {
@@ -30,8 +30,8 @@ const MessageBubble = ({
     );
 
     const hasText = message.message !== null;
-    const hasAttachments =
-        message.attachments && message.attachments.length > 0;
+    // const hasAttachments =
+    //     message.attachments && message.attachments.length > 0;
 
     return (
         <div

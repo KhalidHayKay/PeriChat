@@ -2,10 +2,12 @@ import {
     fetchPublicGroups,
     fetchUsersForNewGroup,
 } from '@/actions/conversation';
-import useOnlineUsers from '@/contexts/OnlineUsersContext';
+import { useOnlineUsers } from '@/contexts/OnlineUsersContext';
 import { cn } from '@/lib/utils';
 import { Check, Search, X } from 'lucide-react';
+
 import { useEffect, useState } from 'react';
+
 import Avatar from '../Avatar';
 
 const CreateGroupModal = ({

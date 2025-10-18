@@ -2,6 +2,7 @@ import { getBroadcastConfig } from '@/config/broadcast';
 import Echo, { type Broadcaster } from 'laravel-echo';
 import Pusher from 'pusher-js';
 import { createContext, useContext, useEffect, useState } from 'react';
+
 import { useAuthContext } from './AuthContext';
 
 declare global {

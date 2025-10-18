@@ -3,6 +3,7 @@ import { routes } from '@/config/routes';
 import { useOnlineUsers } from '@/contexts/OnlineUsersContext';
 import { ConversationTypeEnum } from '@/enums/enums';
 import { ChevronLeft, EllipsisVertical, Phone, VideoIcon } from 'lucide-react';
+
 import { Link } from 'react-router';
 
 const ConversationHeader = ({

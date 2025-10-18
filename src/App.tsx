@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router';
+
 import './App.css';
 import ProtectedRoute from './components/routes/ProtectedRoute';
 import { AppEventProvider } from './contexts/AppEventsContext';

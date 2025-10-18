@@ -1,8 +1,11 @@
 import { fetchAppUsers } from '@/actions/conversation';
-import useOnlineUsers from '@/context/OnlineUsers';
+import { useOnlineUsers } from '@/contexts/OnlineUsersContext';
 import { Plus, Search } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+
+import { useEffect, useRef, useState, type RefObject } from 'react';
+
 import Avatar from '../Avatar';
+
 import usePreventScrollPropagation from './hooks/usePreventScrollPropagation';
 
 const UserList = ({
@@ -20,7 +23,9 @@ const UserList = ({
 
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-    usePreventScrollPropagation(scrollContainerRef);
+    usePreventScrollPropagation(
+        scrollContainerRef as RefObject<HTMLDivElement>
+    );
 
     useEffect(() => {
         fetchAppUsers()

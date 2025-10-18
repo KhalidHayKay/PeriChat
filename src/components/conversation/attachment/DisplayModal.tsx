@@ -6,6 +6,7 @@ import {
     ChevronRight,
     MoreVertical,
 } from 'lucide-react';
+
 import { useEffect, useState } from 'react';
 
 interface DisplayModalProps {

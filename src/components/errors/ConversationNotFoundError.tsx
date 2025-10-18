@@ -1,5 +1,7 @@
 import { routes } from '@/config/routes';
+
 import { Link } from 'react-router';
+
 import { Button } from '../ui/button';
 
 const ConversationNotFoundError = () => {

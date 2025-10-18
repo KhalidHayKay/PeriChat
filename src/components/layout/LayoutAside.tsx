@@ -7,6 +7,7 @@ import { ConversationTypeEnum } from '@/enums/enums';
 import { useConversations } from '@/hooks/useConversations';
 import { useMessageSubscriptions } from '@/hooks/useMessageSubscriptions';
 import { capitalize, cn } from '@/lib/utils';
+
 import ConversationSubjectError from '../errors/ConversationSubjectsError';
 import NewConversationDropdown from '../new-conversation/NewConversationDropdown';
 import ConversationSubjectsSkeleton from '../skeletons/ConversationSubjectSkeleton';

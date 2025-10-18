@@ -1,6 +1,7 @@
 import { routes } from '@/config/routes';
 import { ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router';
+
 import { Skeleton } from '../ui/skeleton';
 
 const ConversationHeaderSkeleton = () => {
