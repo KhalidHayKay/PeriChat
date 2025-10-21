@@ -15,7 +15,7 @@ interface EnvConfig {
         id: string;
         key: string;
         secret: string;
-        host: string;
+        host: string; // Just hostname, no protocol!
         port: number;
         scheme: string;
     };
@@ -37,7 +37,9 @@ export const env: EnvConfig = {
         connection: (ime.VITE_BROADCAST_CONNECTION || 'pusher') as
             | 'pusher'
             | 'reverb',
-        authUrl: ime.VITE_BROADCAST_AUTH_URL,
+        authUrl:
+            (ime.VITE_API_BASE || 'http://localhost:8000') +
+            '/broadcasting/auth',
     },
     pusher: {
         id: ime.VITE_PUSHER_APP_ID || '',

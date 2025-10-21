@@ -1,7 +1,7 @@
 import { env } from '@/config/env';
 
 const buildBaseAuth = (token: string | null) => ({
-    authEndpoint: env.api.base + '/broadcasting/auth',
+    authEndpoint: env.broadcast.authUrl,
     auth: {
         headers: {
             Accept: 'application/json',
@@ -16,17 +16,12 @@ export const broadcastConfigMap: Record<string, (token: string | null) => any> =
             ({
                 broadcaster: 'reverb',
                 key: env.reverb.key,
-                wsHost: env.reverb.host,
-                wsPort:
-                    env.reverb.scheme === 'https'
-                        ? 443
-                        : Number(env.reverb.port),
-                wssPort:
-                    env.reverb.scheme === 'https'
-                        ? Number(env.reverb.port)
-                        : 443,
+                wsHost: env.reverb.host, // No protocol, just hostname
+                wsPort: Number(env.reverb.port),
+                wssPort: Number(env.reverb.port),
                 forceTLS: env.reverb.scheme === 'https',
                 enabledTransports: ['ws', 'wss'],
+                disableStats: true,
                 ...buildBaseAuth(token),
             }) as any,
 
