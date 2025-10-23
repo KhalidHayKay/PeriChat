@@ -1,4 +1,3 @@
-// utils/handleApiError.ts
 import axios from 'axios';
 
 export function handleApiError(error: unknown): never {

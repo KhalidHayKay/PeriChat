@@ -8,8 +8,8 @@ import { useConversations } from '@/hooks/useConversations';
 import { useMessageSubscriptions } from '@/hooks/useMessageSubscriptions';
 import { capitalize, cn } from '@/lib/utils';
 
+import NewConversationDropdown from '../conversation/new/NewConversationDropdown';
 import ConversationSubjectError from '../errors/ConversationSubjectsError';
-import NewConversationDropdown from '../new-conversation/NewConversationDropdown';
 import ConversationSubjectsSkeleton from '../skeletons/ConversationSubjectSkeleton';
 
 type filterType = 'all' | 'private' | 'group';

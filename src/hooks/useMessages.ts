@@ -1,4 +1,3 @@
-// hooks/useMessages.ts
 import { fetchMessages } from '@/actions/message';
 import useEventBus from '@/contexts/AppEventsContext';
 import { ConversationTypeEnum } from '@/enums/enums';
