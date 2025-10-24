@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export function handleApiError(error: unknown): never {
+export const handleApiError = (error: unknown): never => {
     if (axios.isAxiosError(error)) {
         if (error.response) {
             const status = error.response.status;
@@ -36,4 +36,4 @@ export function handleApiError(error: unknown): never {
     // Non-Axios errors
     console.error('Unknown error:', error);
     throw new Error('Unexpected error occurred. Please try again.');
-}
+};

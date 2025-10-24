@@ -5,9 +5,10 @@ import { useConversationContext } from '@/contexts/ConversationContext';
 import { useOnlineUsers } from '@/contexts/OnlineUsersContext';
 import { ConversationTypeEnum } from '@/enums/enums';
 import { useConversations } from '@/hooks/useConversations';
-import { useMessageSubscriptions } from '@/hooks/useMessageSubscriptions';
+import { useConversationSubscriptions } from '@/hooks/useConversationSubscriptions';
 import { capitalize, cn } from '@/lib/utils';
 
+import { useNewConversationSubscriptions } from '@/hooks/useNewConversationSubscriptions';
 import NewConversationDropdown from '../conversation/new/NewConversationDropdown';
 import ConversationSubjectError from '../errors/ConversationSubjectsError';
 import ConversationSubjectsSkeleton from '../skeletons/ConversationSubjectSkeleton';
@@ -26,7 +27,8 @@ const LayoutAside = ({ user }: { user: User }) => {
     const { sorted, filter, setFilter, searchText, setSearchText } =
         useConversations();
 
-    useMessageSubscriptions(user);
+    useConversationSubscriptions(user);
+    useNewConversationSubscriptions(user);
 
     const FilterButton = ({ filterValue }: { filterValue: filterType }) => (
         <Button
@@ -105,7 +107,7 @@ const LayoutAside = ({ user }: { user: User }) => {
                     ) : (
                         sorted.map((conversation) => (
                             <ConversationItem
-                                key={`${conversation.type === ConversationTypeEnum.GROUP ? 'group_' : 'user_'}${conversation.typeId}`}
+                                key={conversation.id}
                                 user={user}
                                 conversation={conversation}
                                 online={

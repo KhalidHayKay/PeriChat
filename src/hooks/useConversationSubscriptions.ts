@@ -2,19 +2,9 @@ import { messageMatchesConversation } from '@/actions/helpers';
 import useAppEventContext from '@/contexts/AppEventsContext';
 import { useConversationContext } from '@/contexts/ConversationContext';
 import { useEcho } from '@/contexts/EchoContext';
-import { ConversationTypeEnum } from '@/enums/enums';
 import { useEffect, useMemo, useRef } from 'react';
 
-const getChannelName = (conversation: Conversation, userId: number) => {
-    if (conversation.type === ConversationTypeEnum.PRIVATE) {
-        return `message.private.${[userId, conversation.typeId]
-            .sort((a, b) => a - b)
-            .join('-')}`;
-    }
-    return `message.group.${conversation.typeId}`;
-};
-
-export const useMessageSubscriptions = (user: User) => {
+export const useConversationSubscriptions = (user: User) => {
     const { echo, isConnected } = useEcho();
     const { conversations, updateConversations } = useConversationContext();
     const { emit } = useAppEventContext();
@@ -39,7 +29,7 @@ export const useMessageSubscriptions = (user: User) => {
 
         // Identify which channels we need
         conversations.forEach((conversation) => {
-            const channelName = getChannelName(conversation, user.id);
+            const channelName = `conversation.${conversation.id}`;
             currentChannels.add(channelName);
 
             // Only subscribe if not already subscribed

@@ -1,4 +1,7 @@
+import { createGroup } from '@/actions/group';
+import { routes } from '@/config/routes';
 import { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 interface UseNewConversationModalsReturn {
     dropdownIsOpen: boolean;
@@ -18,6 +21,8 @@ export const useNewConversationModals = (): UseNewConversationModalsReturn => {
     const [dropdownIsOpen, setDropdownIsOpen] = useState(false);
     const [groupModalIsOpen, setGroupModalIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+
+    const navigate = useNavigate();
 
     const toggleDropdown = useCallback(() => {
         setDropdownIsOpen((prev) => !prev);
@@ -51,12 +56,18 @@ export const useNewConversationModals = (): UseNewConversationModalsReturn => {
     }, []);
 
     const handleGroupCreate = useCallback(
-        (data: { name: string; members: User[] }) => {
-            // TODO: Implement group creation logic
-            console.log('Creating group:', {
+        async (data: { name: string; members: User[] }) => {
+            const reqData = {
                 name: data.name,
-                members: data.members,
-            });
+                members: data.members.map((m) => m.id),
+            };
+
+            const res = await createGroup(reqData);
+
+            if (res) {
+                navigate(routes.app.conversation(res.conversation.id));
+            }
+
             setGroupModalIsOpen(false);
         },
         []
