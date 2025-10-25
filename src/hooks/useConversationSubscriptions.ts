@@ -47,6 +47,7 @@ export const useConversationSubscriptions = (user: User) => {
                     const message = e.message;
 
                     emit('message.created', message);
+
                     updateConversations((prev) =>
                         prev.map((c) => {
                             if (!messageMatchesConversation(c, message))
@@ -67,6 +68,10 @@ export const useConversationSubscriptions = (user: User) => {
                         emit('unread.increment', message);
                     }
                 })
+                .listen('MemberJoined', (e: { member: User; group: Group }) => {
+                    console.log(e);
+                })
+                .listen('LeftGroup', (_e: { group: Group }) => {})
                 .error((error: any) => {
                     console.error(`Error on channel ${channelName}:`, error);
                 });

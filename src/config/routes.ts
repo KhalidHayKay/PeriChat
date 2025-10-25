@@ -15,7 +15,8 @@ export const routes = {
         },
         getUser: (id: string) => `/api/user/${id}`,
         conversation: {
-            create: '/conversation/create',
+            create: (userId: number) =>
+                `/conversation/create/private/${userId}`,
             subjects: '/conversation/subjects',
             newUsers: '/conversation/new/users',
             newGroups: '/conversation/new/groups',
@@ -23,7 +24,7 @@ export const routes = {
         },
         group: {
             create: '/group/new',
-            join: (groupId: string) => `/group/${groupId}join`,
+            join: (groupId: number) => `/group/${groupId}join`,
         },
         message: {
             load: (conversationId: number) =>

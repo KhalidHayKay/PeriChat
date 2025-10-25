@@ -50,3 +50,19 @@ const handleRequest = async (uri: string) => {
         handleApiError(error);
     }
 };
+
+export const createPrivateConversation = async (
+    otherUserId: number,
+    message: { message: string; attachments: Attachment[] }
+) => {
+    try {
+        const res = await api.post(
+            routes.api.conversation.create(otherUserId),
+            message
+        );
+        return res.data.data;
+    } catch (error) {
+        console.error('Failed to send message:', error);
+        handleApiError(error);
+    }
+};

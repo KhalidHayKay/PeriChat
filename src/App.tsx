@@ -13,6 +13,7 @@ import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import Conversation from './pages/Conversation';
 import Home from './pages/Home';
+import NewPrivateConversation from './pages/NewPrivateConversation';
 
 function App() {
     return (
@@ -38,6 +39,10 @@ function App() {
                         <Route
                             path='conversation/:conversationId'
                             element={<Conversation />}
+                        />
+                        <Route
+                            path='conversation/new'
+                            element={<NewPrivateConversation />}
                         />
                     </Route>
 

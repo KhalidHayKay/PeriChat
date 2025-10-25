@@ -12,3 +12,13 @@ export const createGroup = async (data: any) => {
         handleApiError(error);
     }
 };
+
+export const joinGroup = async (groupId: number) => {
+    try {
+        const res = await api.post(routes.api.group.join(groupId));
+        return res.data;
+    } catch (error) {
+        console.error('Failed to send message:', error);
+        handleApiError(error);
+    }
+};

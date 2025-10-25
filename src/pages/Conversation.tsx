@@ -8,6 +8,7 @@ import ConversationMessagesSkeleton from '@/components/skeletons/ConversationMes
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useConversationContext } from '@/contexts/ConversationContext';
 import { useMessages } from '@/hooks/useMessages';
+import { useSendMessage } from '@/hooks/useSendMessage';
 
 const Conversation = () => {
     const { user } = useAuthContext();
@@ -19,6 +20,7 @@ const Conversation = () => {
     } = useConversationContext();
     const { messages, setMessages, refreshMessages, error, loading } =
         useMessages(selectedConversation);
+    const { send, sending } = useSendMessage();
 
     if (isLoadingConversation) {
         return (
@@ -60,6 +62,8 @@ const Conversation = () => {
                 conversation={selectedConversation as Conversation}
                 setMessages={setMessages}
                 updateConversations={updateConversations}
+                hanldeSend={send}
+                sending={sending}
             />
         </>
     );

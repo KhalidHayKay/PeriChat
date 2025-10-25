@@ -1,4 +1,4 @@
-import { createGroup } from '@/actions/group';
+import { createGroup, joinGroup } from '@/actions/group';
 import { routes } from '@/config/routes';
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -44,14 +44,22 @@ export const useNewConversationModals = (): UseNewConversationModalsReturn => {
     }, []);
 
     const handleUserClick = useCallback((otherUser: User) => {
-        // TODO: Implement conversation creation logic
-        console.log('User clicked:', otherUser);
+        navigate(`/conversation/new`, {
+            state: { otherUser },
+        });
+
         setDropdownIsOpen(false);
     }, []);
 
-    const handlePublicGroupJoin = useCallback((group: Group) => {
-        // TODO: Implement group join logic
+    const handlePublicGroupJoin = useCallback(async (group: Group) => {
         console.log('Joining public group:', group);
+
+        const res = await joinGroup(group.id);
+
+        if (res) {
+            navigate(routes.app.conversation(res.conversation.id));
+        }
+
         setGroupModalIsOpen(false);
     }, []);
 
@@ -63,9 +71,10 @@ export const useNewConversationModals = (): UseNewConversationModalsReturn => {
             };
 
             const res = await createGroup(reqData);
+            console.log(res.data);
 
             if (res) {
-                navigate(routes.app.conversation(res.conversation.id));
+                navigate(routes.app.conversation(res.data.id));
             }
 
             setGroupModalIsOpen(false);

@@ -14,36 +14,25 @@ export const useNewConversationSubscriptions = (user: User) => {
         const channelName = `user.${user.id}`;
 
         echo.private(channelName)
+            .listen('GroupCreated', (e: { conversation: Conversation }) => {
+                const { conversation } = e;
+
+                updateConversations((prev) => [conversation, ...prev]);
+
+                // if (message.senderId !== user.id) {
+                //     emit('unread.increment', message);
+                // }
+            })
             .listen(
-                'GroupCreated',
-                (e: { group: Group; conversation: Conversation }) => {
-                    const group = e.group;
-                    const conversation = e.conversation;
+                'ConversationCreated',
+                (e: { conversation: Conversation; message: Message }) => {
+                    const { conversation, message } = e;
 
-                    console.log(group, conversation);
+                    updateConversations((prev) => [conversation, ...prev]);
 
-                    const optimalConversation: Conversation = {
-                        id: conversation.id,
-                        name: group.name,
-                        type: 'group',
-                        typeId: conversation.typeId,
-                        avatar: '',
-                        lastMessage: `${group.owner.name} created this group`,
-                        lastMessageAttachmentCount: 0,
-                        lastMessageSenderId: 0,
-                        lastMessageDate: group.created,
-                        unreadMessageCount: 0,
-                    };
-
-                    // emit('message.created', message);
-                    updateConversations((prev) => [
-                        ...prev,
-                        optimalConversation,
-                    ]);
-
-                    // if (message.senderId !== user.id) {
-                    //     emit('unread.increment', message);
-                    // }
+                    if (conversation.lastMessageSenderId !== user.id) {
+                        emit('unread.increment', message);
+                    }
                 }
             )
             .error((error: any) => {
