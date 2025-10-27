@@ -3,5 +3,7 @@ interface Group {
     name: string;
     avatar: string | null;
     description: string;
-    usersId?: number[];
+    userIds?: number[];
+    owner: User;
+    created: date;
 }

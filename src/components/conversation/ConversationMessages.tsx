@@ -66,10 +66,10 @@ const ConversationMessages = ({
 
         try {
             const { messages: olderMessages, hasMore } =
-                await loadOlderMessages(
+                (await loadOlderMessages(
                     selectedConversation.id,
                     lastMessage.id
-                );
+                )) || { messages: [], hasMore: false };
 
             if (!hasMore) {
                 setNoOlderMessages(true);
@@ -128,6 +128,15 @@ const ConversationMessages = ({
         }
 
         if (noOlderMessages) {
+            return;
+        }
+
+        const isScrollable = conversationCtrRef.current
+            ? conversationCtrRef.current.scrollHeight >
+              conversationCtrRef.current.clientHeight
+            : false;
+
+        if (!isScrollable) {
             return;
         }
 

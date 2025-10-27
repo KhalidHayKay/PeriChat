@@ -2,6 +2,7 @@ import { fetchMessages } from '@/actions/message';
 import useEventBus from '@/contexts/AppEventsContext';
 import { ConversationTypeEnum } from '@/enums/enums';
 import { useCallback, useEffect, useState } from 'react';
+import { useLocation } from 'react-router';
 
 interface UseMessagesReturn {
     messages: Message[];
@@ -20,11 +21,26 @@ export const useMessages = (
 
     const { on } = useEventBus();
 
+    const location = useLocation();
+
     // Fetch messages for current conversation
     const fetchMessagesForConversation = useCallback(
         async (conversationId: number) => {
             setLoading(true);
             setError(null);
+
+            const state = location.state as {
+                initialMessage?: Message;
+                skipInitialFetch?: boolean;
+            } | null;
+
+            if (state?.skipInitialFetch && state?.initialMessage) {
+                setMessages([state.initialMessage]);
+                setLoading(false);
+
+                window.history.replaceState({}, document.title);
+                return;
+            }
 
             try {
                 const { data } = await fetchMessages(conversationId);
@@ -45,7 +61,7 @@ export const useMessages = (
                 setLoading(false);
             }
         },
-        []
+        [location.state]
     );
 
     // Manual refresh

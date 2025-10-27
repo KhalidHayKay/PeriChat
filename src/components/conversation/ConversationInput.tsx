@@ -7,62 +7,64 @@ import {
 import { useSendMessage } from '@/hooks/useSendMessage';
 import { cn } from '@/lib/utils';
 import { Plus, Send, Smile } from 'lucide-react';
-
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
-
 import { Textarea } from '../ui/textarea';
-
 import PresendPreview from './attachment/PresendPreview';
 
 const EmojiPicker = React.lazy(() => import('emoji-picker-react'));
 
+interface ConversationInputType {
+    conversation: Conversation;
+    hanldeSend: ReturnType<typeof useSendMessage>['send'];
+    sending: boolean;
+
+    user?: User;
+    setMessages?: React.Dispatch<React.SetStateAction<Message[]>>;
+    updateConversations?: (
+        updater: (prev: Conversation[]) => Conversation[]
+    ) => void;
+}
+
 const ConversationInput = ({
     conversation,
+    hanldeSend,
+    sending,
     // user,
     // setMessages,
     // updateConversations,
-}: {
-    conversation: Conversation;
-    user: User;
-    setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
-    updateConversations: (
-        updater: (prev: Conversation[]) => Conversation[]
-    ) => void;
-}) => {
+}: ConversationInputType) => {
     const input = useRef<HTMLTextAreaElement>(null);
     const [value, setValue] = useState('');
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [files, setFiles] = useState<Attachment[]>([]);
 
-    const { send, sending } = useSendMessage();
-
     const handleSendMessage = async () => {
         if (sending) return;
         if (value.trim() === '' && files.length === 0) return;
 
-        // const tempMsg = createTempMessage(value, files, conversation, user);
+        /*const tempMsg = createTempMessage(value, files, conversation, user);
 
         // Optimistic update
-        // setMessages((prev) => [...prev, tempMsg]);
-        // updateConversations((prev) =>
-        //     prev.map((c) => {
-        //         if (!messageMatchesConversation(c, tempMsg)) return c;
+        setMessages((prev) => [...prev, tempMsg]);
+        updateConversations((prev) =>
+            prev.map((c) => {
+                if (!messageMatchesConversation(c, tempMsg)) return c;
 
-        //         return {
-        //             ...c,
-        //             lastMessage: tempMsg.message,
-        //             lastMessageDate: tempMsg.createdAt,
-        //             lastMessageSenderId: tempMsg.senderId,
-        //             lastMessageAttachmentCount:
-        //                 tempMsg.attachments?.length ?? 0,
-        //         };
-        //     })
-        // );
+                return {
+                    ...c,
+                    lastMessage: tempMsg.message,
+                    lastMessageDate: tempMsg.createdAt,
+                    lastMessageSenderId: tempMsg.senderId,
+                    lastMessageAttachmentCount:
+                        tempMsg.attachments?.length ?? 0,
+                };
+            })
+        );*/
 
         try {
             // const message =
-            await send(value, files, conversation);
+            await hanldeSend(value, files, conversation);
 
             // Replace the temp message with the real one
             // setMessages((prev) =>

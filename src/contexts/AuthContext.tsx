@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import { setLogout } from '@/lib/triggerLogout';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -60,6 +61,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsAuthenticated(false);
         setUser(null);
     };
+
+    useEffect(() => {
+        setLogout(logout);
+    }, []);
 
     const getToken = () => localStorage.getItem('authToken');
 

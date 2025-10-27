@@ -1,5 +1,5 @@
 interface EnvConfig {
-    app: { name: string; version: string; url: string };
+    app: { name: string; version: string; url: string; env: string };
     api: { url: string; base: string };
     broadcast: { connection: 'pusher' | 'reverb'; authUrl: string };
     pusher: {
@@ -26,6 +26,7 @@ const ime = import.meta.env;
 export const env: EnvConfig = {
     app: {
         name: ime.VITE_APP_NAME || 'PeriChat',
+        env: ime.VITE_APP_ENV || 'production',
         version: ime.VITE_APP_VERSION || '1.0.0',
         url: ime.VITE_APP_URL,
     },

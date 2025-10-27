@@ -2,19 +2,9 @@ import { messageMatchesConversation } from '@/actions/helpers';
 import useAppEventContext from '@/contexts/AppEventsContext';
 import { useConversationContext } from '@/contexts/ConversationContext';
 import { useEcho } from '@/contexts/EchoContext';
-import { ConversationTypeEnum } from '@/enums/enums';
 import { useEffect, useMemo, useRef } from 'react';
 
-const getChannelName = (conversation: Conversation, userId: number) => {
-    if (conversation.type === ConversationTypeEnum.PRIVATE) {
-        return `message.private.${[userId, conversation.typeId]
-            .sort((a, b) => a - b)
-            .join('-')}`;
-    }
-    return `message.group.${conversation.typeId}`;
-};
-
-export const useMessageSubscriptions = (user: User) => {
+export const useConversationSubscriptions = (user: User) => {
     const { echo, isConnected } = useEcho();
     const { conversations, updateConversations } = useConversationContext();
     const { emit } = useAppEventContext();
@@ -39,7 +29,7 @@ export const useMessageSubscriptions = (user: User) => {
 
         // Identify which channels we need
         conversations.forEach((conversation) => {
-            const channelName = getChannelName(conversation, user.id);
+            const channelName = `conversation.${conversation.id}`;
             currentChannels.add(channelName);
 
             // Only subscribe if not already subscribed
@@ -54,9 +44,10 @@ export const useMessageSubscriptions = (user: User) => {
 
             echo.private(channelName)
                 .listen('MessageSent', (e: { message: Message }) => {
-                    const message = e.message;
+                    const { message } = e;
 
                     emit('message.created', message);
+
                     updateConversations((prev) =>
                         prev.map((c) => {
                             if (!messageMatchesConversation(c, message))
@@ -77,6 +68,26 @@ export const useMessageSubscriptions = (user: User) => {
                         emit('unread.increment', message);
                     }
                 })
+                .listen('MemberJoined', (e: { member: User; group: Group }) => {
+                    console.log(e);
+
+                    const { member, group } = e;
+
+                    updateConversations((prev) =>
+                        prev.map((c) => {
+                            if (c.type !== 'group' || c.typeId !== group.id)
+                                return c;
+
+                            return {
+                                ...c,
+                                lastMessage: `${member.name} joined ${group.name}`,
+                                lastMessageDate: group.created,
+                                lastMessageSenderId: 0,
+                            };
+                        })
+                    );
+                })
+                // .listen('LeftGroup', (e: { group: Group }) => {})
                 .error((error: any) => {
                     console.error(`Error on channel ${channelName}:`, error);
                 });

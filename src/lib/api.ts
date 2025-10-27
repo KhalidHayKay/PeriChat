@@ -5,6 +5,7 @@ import type {
     InternalAxiosRequestConfig,
 } from 'axios';
 import axios from 'axios';
+import { triggerLogout } from './triggerLogout';
 
 export interface ApiResponse<T> {
     data: T;
@@ -36,13 +37,21 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Response interceptor
 api.interceptors.response.use(
     (response: AxiosResponse) => response,
     (error) => {
         if (error.response?.status === 401) {
-            // handle unauthorized
+            const path = window.location.pathname;
+            const isAuthRoute = [
+                '/login',
+                '/register',
+                '/forgot-password',
+            ].some((authPath) => path.startsWith(authPath));
+            if (!isAuthRoute) {
+                triggerLogout();
+            }
         }
+
         return Promise.reject(error);
     }
 );

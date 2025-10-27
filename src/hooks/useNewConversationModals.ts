@@ -1,4 +1,8 @@
+import { createGroup, joinGroup } from '@/actions/group';
+import { routes } from '@/config/routes';
+import { useConversationContext } from '@/contexts/ConversationContext';
 import { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 interface UseNewConversationModalsReturn {
     dropdownIsOpen: boolean;
@@ -18,6 +22,9 @@ export const useNewConversationModals = (): UseNewConversationModalsReturn => {
     const [dropdownIsOpen, setDropdownIsOpen] = useState(false);
     const [groupModalIsOpen, setGroupModalIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const { updateConversations } = useConversationContext();
+
+    const navigate = useNavigate();
 
     const toggleDropdown = useCallback(() => {
         setDropdownIsOpen((prev) => !prev);
@@ -39,24 +46,37 @@ export const useNewConversationModals = (): UseNewConversationModalsReturn => {
     }, []);
 
     const handleUserClick = useCallback((otherUser: User) => {
-        // TODO: Implement conversation creation logic
-        console.log('User clicked:', otherUser);
+        navigate(`/conversation/new`, {
+            state: { otherUser },
+        });
+
         setDropdownIsOpen(false);
     }, []);
 
-    const handlePublicGroupJoin = useCallback((group: Group) => {
-        // TODO: Implement group join logic
-        console.log('Joining public group:', group);
+    const handlePublicGroupJoin = useCallback(async (group: Group) => {
+        const res = await joinGroup(group.id);
+
+        if (res) {
+            updateConversations((prev) => [res, ...prev]);
+            navigate(routes.app.conversation(res.id));
+        }
+
         setGroupModalIsOpen(false);
     }, []);
 
     const handleGroupCreate = useCallback(
-        (data: { name: string; members: User[] }) => {
-            // TODO: Implement group creation logic
-            console.log('Creating group:', {
+        async (data: { name: string; members: User[] }) => {
+            const reqData = {
                 name: data.name,
-                members: data.members,
-            });
+                members: data.members.map((m) => m.id),
+            };
+
+            const res = await createGroup(reqData);
+
+            if (res) {
+                navigate(routes.app.conversation(res.data.id));
+            }
+
             setGroupModalIsOpen(false);
         },
         []

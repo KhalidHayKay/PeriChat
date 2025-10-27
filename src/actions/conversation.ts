@@ -50,3 +50,28 @@ const handleRequest = async (uri: string) => {
         handleApiError(error);
     }
 };
+
+export const createPrivateConversation = async (
+    otherUserId: number,
+    message: { message: string; attachments: Attachment[] }
+) => {
+    try {
+        const data = new FormData();
+
+        message.attachments.forEach((file) =>
+            data.append('attachments[]', file.file)
+        );
+
+        data.append('message', message.message);
+
+        const res = await api.post(
+            routes.api.conversation.create(otherUserId),
+            data,
+            { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+        return res.data.data;
+    } catch (error) {
+        console.error('Failed to send message:', error);
+        handleApiError(error);
+    }
+};

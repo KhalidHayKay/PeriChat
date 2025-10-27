@@ -15,10 +15,16 @@ export const routes = {
         },
         getUser: (id: string) => `/api/user/${id}`,
         conversation: {
+            create: (userId: number) =>
+                `/conversation/create/private/${userId}`,
             subjects: '/conversation/subjects',
             newUsers: '/conversation/new/users',
             newGroups: '/conversation/new/groups',
             newGroupUsers: '/conversation/new/group-users',
+        },
+        group: {
+            create: '/group/new',
+            join: (groupId: number) => `/group/${groupId}/join`,
         },
         message: {
             load: (conversationId: number) =>

@@ -1,3 +1,4 @@
+import { env } from '@/config/env';
 import { cn } from '@/lib/utils';
 import { Download, Pause, Play } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -18,7 +19,7 @@ export const AudioPlayer = ({
     const progressRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const audio = new Audio(file.url);
+        const audio = new Audio(env.api.base + file.url);
         audioRef.current = audio;
 
         audio.addEventListener('loadedmetadata', () => {
@@ -173,7 +174,7 @@ export const AudioPlayer = ({
                 <button
                     onClick={() => {
                         const link = document.createElement('a');
-                        link.href = file.url;
+                        link.href = env.api.base + file.url;
                         link.download = file.name || 'attachment';
                         link.click();
                     }}
