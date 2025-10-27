@@ -44,7 +44,7 @@ export const useConversationSubscriptions = (user: User) => {
 
             echo.private(channelName)
                 .listen('MessageSent', (e: { message: Message }) => {
-                    const message = e.message;
+                    const { message } = e;
 
                     emit('message.created', message);
 
@@ -70,8 +70,24 @@ export const useConversationSubscriptions = (user: User) => {
                 })
                 .listen('MemberJoined', (e: { member: User; group: Group }) => {
                     console.log(e);
+
+                    const { member, group } = e;
+
+                    updateConversations((prev) =>
+                        prev.map((c) => {
+                            if (c.type !== 'group' || c.typeId !== group.id)
+                                return c;
+
+                            return {
+                                ...c,
+                                lastMessage: `${member.name} joined ${group.name}`,
+                                lastMessageDate: group.created,
+                                lastMessageSenderId: 0,
+                            };
+                        })
+                    );
                 })
-                .listen('LeftGroup', (_e: { group: Group }) => {})
+                // .listen('LeftGroup', (e: { group: Group }) => {})
                 .error((error: any) => {
                     console.error(`Error on channel ${channelName}:`, error);
                 });

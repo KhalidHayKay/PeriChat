@@ -56,9 +56,18 @@ export const createPrivateConversation = async (
     message: { message: string; attachments: Attachment[] }
 ) => {
     try {
+        const data = new FormData();
+
+        message.attachments.forEach((file) =>
+            data.append('attachments[]', file.file)
+        );
+
+        data.append('message', message.message);
+
         const res = await api.post(
             routes.api.conversation.create(otherUserId),
-            message
+            data,
+            { headers: { 'Content-Type': 'multipart/form-data' } }
         );
         return res.data.data;
     } catch (error) {

@@ -24,7 +24,7 @@ export const routes = {
         },
         group: {
             create: '/group/new',
-            join: (groupId: number) => `/group/${groupId}join`,
+            join: (groupId: number) => `/group/${groupId}/join`,
         },
         message: {
             load: (conversationId: number) =>

@@ -18,10 +18,6 @@ export const useNewConversationSubscriptions = (user: User) => {
                 const { conversation } = e;
 
                 updateConversations((prev) => [conversation, ...prev]);
-
-                // if (message.senderId !== user.id) {
-                //     emit('unread.increment', message);
-                // }
             })
             .listen(
                 'ConversationCreated',

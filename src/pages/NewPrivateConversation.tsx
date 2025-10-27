@@ -12,7 +12,7 @@ const NewPrivateConversation = () => {
     const { updateConversations } = useConversationContext();
     const { emit } = useAppEventContext();
     const [isCreating, setIsCreating] = useState(false);
-    const [_error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const { state } = useLocation();
     const otherUser = state?.otherUser;
@@ -33,6 +33,7 @@ const NewPrivateConversation = () => {
                 message: content,
                 attachments: files,
             };
+
             const { conversation, message } = await createPrivateConversation(
                 Number(otherUser.id),
                 reqMessage
@@ -42,8 +43,13 @@ const NewPrivateConversation = () => {
 
             emit('message.created', message);
 
+            // Navigate with the first message in state
             navigate(`/conversation/${conversation.id}`, {
                 replace: true,
+                state: {
+                    initialMessage: message,
+                    skipInitialFetch: true,
+                },
             });
         } catch (err) {
             setError(
@@ -51,6 +57,7 @@ const NewPrivateConversation = () => {
                     ? err.message
                     : 'Failed to create conversation'
             );
+            console.log(error);
             setIsCreating(false);
         }
     };

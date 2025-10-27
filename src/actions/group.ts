@@ -16,7 +16,7 @@ export const createGroup = async (data: any) => {
 export const joinGroup = async (groupId: number) => {
     try {
         const res = await api.post(routes.api.group.join(groupId));
-        return res.data;
+        return res.data.data;
     } catch (error) {
         console.error('Failed to send message:', error);
         handleApiError(error);
