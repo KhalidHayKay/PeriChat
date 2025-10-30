@@ -46,25 +46,25 @@ export const useConversationSubscriptions = (user: User) => {
                 .listen('MessageSent', (e: { message: Message }) => {
                     const { message } = e;
 
-                    emit('message.created', message);
-
-                    updateConversations((prev) =>
-                        prev.map((c) => {
-                            if (!messageMatchesConversation(c, message))
-                                return c;
-
-                            return {
-                                ...c,
-                                lastMessage: message.message,
-                                lastMessageDate: message.createdAt,
-                                lastMessageSenderId: message.senderId,
-                                lastMessageAttachmentCount:
-                                    message.attachments?.length ?? 0,
-                            };
-                        })
-                    );
-
                     if (message.senderId !== user.id) {
+                        emit('message.created', message);
+
+                        updateConversations((prev) =>
+                            prev.map((c) => {
+                                if (!messageMatchesConversation(c, message))
+                                    return c;
+
+                                return {
+                                    ...c,
+                                    lastMessage: message.message,
+                                    lastMessageDate: message.createdAt,
+                                    lastMessageSenderId: message.senderId,
+                                    lastMessageAttachmentCount:
+                                        message.attachments?.length ?? 0,
+                                };
+                            })
+                        );
+
                         emit('unread.increment', message);
                     }
                 })

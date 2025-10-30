@@ -5,6 +5,7 @@ interface Conversation {
     typeId: number;
     avatar: string;
     lastMessage: string;
+    lastMessageStatus?: 'sending' | 'delivered' | 'failed';
     lastMessageAttachmentCount: number;
     lastMessageSenderId: number;
     lastMessageDate: string;

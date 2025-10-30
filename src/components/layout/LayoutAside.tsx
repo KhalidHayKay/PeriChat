@@ -9,6 +9,7 @@ import { useConversationSubscriptions } from '@/hooks/useConversationSubscriptio
 import { capitalize, cn } from '@/lib/utils';
 
 import { useNewConversationSubscriptions } from '@/hooks/useNewConversationSubscriptions';
+import { useLocation } from 'react-router';
 import NewConversationDropdown from '../conversation/new/NewConversationDropdown';
 import ConversationSubjectError from '../errors/ConversationSubjectsError';
 import ConversationSubjectsSkeleton from '../skeletons/ConversationSubjectSkeleton';
@@ -29,6 +30,9 @@ const LayoutAside = ({ user }: { user: User }) => {
 
     useConversationSubscriptions(user);
     useNewConversationSubscriptions(user);
+
+    const { state } = useLocation();
+    const otherUser = state?.otherUser as User | undefined;
 
     const FilterButton = ({ filterValue }: { filterValue: filterType }) => (
         <Button
@@ -51,7 +55,7 @@ const LayoutAside = ({ user }: { user: User }) => {
             className={cn(
                 'transition duration-100',
                 'h-full w-full sm:w-[300px] md:w-[370px] lg:w-[450px] bg-primary py-4 rounded-lg shadow space-y-5',
-                hasConversationId ? '-ml-[100%] sm:-ml-0' : ''
+                hasConversationId || otherUser ? '-ml-[100%] sm:-ml-0' : ''
             )}
         >
             <header className='px-4 mobile:px-10 sm:px-4 space-y-5'>

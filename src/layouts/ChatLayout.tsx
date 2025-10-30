@@ -2,18 +2,23 @@ import LayoutAside from '@/components/layout/LayoutAside';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useConversationContext } from '@/contexts/ConversationContext';
 import { cn } from '@/lib/utils';
-import { Outlet } from 'react-router';
+import { Outlet, useLocation } from 'react-router';
 
 const ChatLayout = () => {
     const { user } = useAuthContext();
     const { selectedConversation } = useConversationContext();
+
+    const { state } = useLocation();
+    const otherUser = state?.otherUser as User | undefined;
 
     return (
         <div className='min-h-screen bg-secondary'>
             <div
                 className={cn(
                     'flex h-screen sm:p-2 overflow-hidden',
-                    selectedConversation ? 'gap-x-0 sm:gap-x-2' : 'sm:gap-x-2'
+                    selectedConversation || otherUser
+                        ? 'gap-x-0 sm:gap-x-2'
+                        : 'sm:gap-x-2'
                 )}
             >
                 <LayoutAside user={user} />

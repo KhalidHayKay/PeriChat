@@ -4,7 +4,6 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-import { useSendMessage } from '@/hooks/useSendMessage';
 import { cn } from '@/lib/utils';
 import { Plus, Send, Smile } from 'lucide-react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
@@ -14,26 +13,23 @@ import PresendPreview from './attachment/PresendPreview';
 
 const EmojiPicker = React.lazy(() => import('emoji-picker-react'));
 
-interface ConversationInputType {
+interface ConversationInputProps {
     conversation: Conversation;
-    hanldeSend: ReturnType<typeof useSendMessage>['send'];
+    handleSend: (
+        messageText: string,
+        attachments: Attachment[],
+        conversation: Conversation
+    ) => Promise<
+        void | Message | { conversation: Conversation; message: Message }
+    >;
     sending: boolean;
-
-    user?: User;
-    setMessages?: React.Dispatch<React.SetStateAction<Message[]>>;
-    updateConversations?: (
-        updater: (prev: Conversation[]) => Conversation[]
-    ) => void;
 }
 
 const ConversationInput = ({
     conversation,
-    hanldeSend,
+    handleSend,
     sending,
-    // user,
-    // setMessages,
-    // updateConversations,
-}: ConversationInputType) => {
+}: ConversationInputProps) => {
     const input = useRef<HTMLTextAreaElement>(null);
     const [value, setValue] = useState('');
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -43,52 +39,20 @@ const ConversationInput = ({
         if (sending) return;
         if (value.trim() === '' && files.length === 0) return;
 
-        /*const tempMsg = createTempMessage(value, files, conversation, user);
+        const messageText = value;
+        const messageFiles = [...files];
 
-        // Optimistic update
-        setMessages((prev) => [...prev, tempMsg]);
-        updateConversations((prev) =>
-            prev.map((c) => {
-                if (!messageMatchesConversation(c, tempMsg)) return c;
-
-                return {
-                    ...c,
-                    lastMessage: tempMsg.message,
-                    lastMessageDate: tempMsg.createdAt,
-                    lastMessageSenderId: tempMsg.senderId,
-                    lastMessageAttachmentCount:
-                        tempMsg.attachments?.length ?? 0,
-                };
-            })
-        );*/
+        setValue('');
+        setFiles([]);
 
         try {
-            // const message =
-            await hanldeSend(value, files, conversation);
-
-            // Replace the temp message with the real one
-            // setMessages((prev) =>
-            //     prev.map((m) =>
-            //         (m as any).tempId === tempMsg.tempId
-            //             ? { ...message, status: 'delivered' }
-            //             : m
-            //     )
-            // );
+            await handleSend(messageText, messageFiles, conversation);
 
             setValue('');
             setFiles([]);
             files.forEach((file) => URL.revokeObjectURL(file.url));
         } catch (error) {
             console.error('Failed to send message:', error);
-
-            // Mark temporary message as failed
-            // setMessages((prev) =>
-            //     prev.map((m) =>
-            //         (m as any).tempId === tempMsg.tempId
-            //             ? { ...m, status: 'failed' }
-            //             : m
-            //     )
-            // );
         }
     };
 
@@ -143,7 +107,6 @@ const ConversationInput = ({
         input.current?.focus();
     }, [conversation]);
 
-    // Cleanup file URLs on unmount
     useEffect(() => {
         return () => {
             files.forEach((file) => URL.revokeObjectURL(file.url));

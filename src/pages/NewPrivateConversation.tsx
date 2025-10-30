@@ -1,9 +1,9 @@
-import { createPrivateConversation } from '@/actions/conversation';
 import ConversationHeader from '@/components/conversation/ConversationHeader';
 import ConversationInput from '@/components/conversation/ConversationInput';
 import useAppEventContext from '@/contexts/AppEventsContext';
 import { useConversationContext } from '@/contexts/ConversationContext';
-import { useState } from 'react';
+import { useSendMessage } from '@/hooks/useSendMessage';
+import { useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
 const NewPrivateConversation = () => {
@@ -11,56 +11,48 @@ const NewPrivateConversation = () => {
     // const { user } = useAuthContext();
     const { updateConversations } = useConversationContext();
     const { emit } = useAppEventContext();
-    const [isCreating, setIsCreating] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const { sendFirstMessage, sending: isCreating } = useSendMessage();
 
     const { state } = useLocation();
-    const otherUser = state?.otherUser;
+    const otherUser = state?.otherUser as User | undefined;
 
     if (!otherUser) {
         navigate('/');
         return null;
     }
 
-    const handleFirstMessage = async (content: string, files: Attachment[]) => {
-        if (isCreating) return;
+    const handleFirstMessage = useCallback(
+        async (content: string, files: Attachment[]) => {
+            try {
+                const result = await sendFirstMessage(
+                    content,
+                    files,
+                    Number(otherUser.id),
+                    otherUser,
+                    {
+                        onSuccess: (conversation, message) => {
+                            updateConversations((prev) => [
+                                conversation,
+                                ...prev,
+                            ]);
+                            emit('message.created', message);
 
-        setIsCreating(true);
-        setError(null);
-
-        try {
-            const reqMessage = {
-                message: content,
-                attachments: files,
-            };
-
-            const { conversation, message } = await createPrivateConversation(
-                Number(otherUser.id),
-                reqMessage
-            );
-
-            updateConversations((prev) => [conversation, ...prev]);
-
-            emit('message.created', message);
-
-            // Navigate with the first message in state
-            navigate(`/conversation/${conversation.id}`, {
-                replace: true,
-                state: {
-                    initialMessage: message,
-                    skipInitialFetch: true,
-                },
-            });
-        } catch (err) {
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : 'Failed to create conversation'
-            );
-            console.log(error);
-            setIsCreating(false);
-        }
-    };
+                            navigate(`/conversation/${conversation.id}`, {
+                                replace: true,
+                                state: {
+                                    initialMessage: message,
+                                    skipInitialFetch: true,
+                                },
+                            });
+                        },
+                    }
+                );
+            } catch (err) {
+                console.error('Failed to create conversation:', err);
+            }
+        },
+        [sendFirstMessage, otherUser, updateConversations, emit, navigate]
+    );
 
     if (!otherUser) return <div>Loading...</div>;
 
@@ -70,7 +62,7 @@ const NewPrivateConversation = () => {
         name: otherUser.name,
         type: 'private',
         typeId: otherUser.id,
-        avatar: otherUser.avatar,
+        avatar: otherUser.avatar ?? '',
         lastMessage: '',
         lastMessageAttachmentCount: 0,
         lastMessageSenderId: 0,
@@ -90,7 +82,7 @@ const NewPrivateConversation = () => {
 
             <ConversationInput
                 conversation={mockConversation}
-                hanldeSend={handleFirstMessage}
+                handleSend={handleFirstMessage}
                 sending={isCreating}
             />
         </>
