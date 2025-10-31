@@ -82,12 +82,7 @@ export const useSendMessage = () => {
             messageText: string,
             attachments: Attachment[],
             receiverId: number,
-            user: User,
             callbacks?: {
-                onOptimisticUpdate?: (
-                    tempMessage: Message & { tempId: string },
-                    tempConversation: Conversation
-                ) => void;
                 onSuccess?: (
                     conversation: Conversation,
                     message: Message
@@ -97,29 +92,6 @@ export const useSendMessage = () => {
         ) => {
             setSending(true);
             setError(null);
-
-            // Create temp conversation for optimistic update
-            const tempConversation: Conversation = {
-                id: 0,
-                name: '', // You'd need to pass the other user's name
-                type: 'private',
-                typeId: receiverId,
-                avatar: '',
-                lastMessage: messageText,
-                lastMessageAttachmentCount: attachments.length,
-                lastMessageSenderId: user?.id || 0,
-                lastMessageDate: new Date().toISOString(),
-                unreadMessageCount: 0,
-            };
-
-            const tempMessage = createTempMessage(
-                messageText,
-                attachments,
-                tempConversation,
-                user
-            );
-
-            callbacks?.onOptimisticUpdate?.(tempMessage, tempConversation);
 
             try {
                 const reqMessage = {

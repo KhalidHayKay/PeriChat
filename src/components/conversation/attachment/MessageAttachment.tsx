@@ -5,7 +5,6 @@ import {
     isImage,
     isVideo,
 } from '@/actions/file-check';
-import { env } from '@/config/env';
 import { capitalize, cn } from '@/lib/utils';
 import { Download, File, PlayCircleIcon } from 'lucide-react';
 
@@ -25,8 +24,6 @@ const MessageAttachment = ({
     onAttachmentClick?: (index: number) => void;
 }) => {
     return attachments.map((attachment, i) => {
-        const url = env.api.base + attachment.url;
-
         return (
             <Fragment key={attachment.id ?? i}>
                 {isImage(attachment) && (
@@ -39,7 +36,7 @@ const MessageAttachment = ({
                         className='size-[90px] mobile:size-[110px] md:size-[130px] lg:size-[150px] shadow-md hover:shadow-lg rounded-md overflow-hidden cursor-pointer message-image-hover-effect'
                     >
                         <img
-                            src={url}
+                            src={attachment.url}
                             className='size-full object-fill shadow-lg opacity-95'
                         />
                     </div>
@@ -55,7 +52,7 @@ const MessageAttachment = ({
                         <PlayCircleIcon className='z-20 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-10 text-secondary opacity-70' />
                         {/* <div className='absolute left-0 top-0 size-full bg-black/50 z-10'></div> */}
                         <video
-                            src={url}
+                            src={attachment.url}
                             className='size-full'
                             // controls
                         ></video>
@@ -126,8 +123,9 @@ const MessageAttachment = ({
 
                         <button
                             onClick={
-                                url
-                                    ? () => window.open(url, '_blank')
+                                attachment.url
+                                    ? () =>
+                                          window.open(attachment.url, '_blank')
                                     : undefined
                             }
                             className={cn(
@@ -137,7 +135,7 @@ const MessageAttachment = ({
                                     : 'text-primary-content hover:bg-primary-content/50'
                             )}
                             title='Download file'
-                            disabled={!url}
+                            disabled={!attachment.url}
                         >
                             <Download size={18} />
                             <span className='sr-only'>

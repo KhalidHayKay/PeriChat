@@ -27,15 +27,23 @@ export default defineConfig([
             prettier,
         },
 
+        // extended configs
         extends: [js.configs.recommended, ...tseslint.configs.recommended],
 
+        // rules overide
         rules: {
-            'prettier/prettier': 'warn',
+            'import/order': 'off',
+            'import/first': 'off',
+            'import/newline-after-import': 'off',
+            'import/no-duplicates': 'off',
 
+            // React & TS preferences
             'react/no-unescaped-entities': 'off',
             'react/react-in-jsx-scope': 'off',
-            'import/order': 'off',
             '@typescript-eslint/no-explicit-any': 'warn',
+
+            // Prettier integration
+            'prettier/prettier': 'warn',
         },
 
         settings: {
