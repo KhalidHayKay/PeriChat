@@ -29,7 +29,7 @@ const ConversationMessages = ({
     error,
     selectedConversation,
     user,
-    // onRetryMessage,
+    onRetryMessage,
 }: ConversationMessagesProps) => {
     const conversationCtrRef = useRef<HTMLDivElement | null>(null);
     const loadOlderMessageIntercept = useRef<HTMLDivElement | null>(null);
@@ -219,6 +219,7 @@ const ConversationMessages = ({
                         message={message}
                         onAttachmentClick={onAttachmentClick}
                         user={user}
+                        onRetryMessage={onRetryMessage}
                     />
                 ))}
             </div>

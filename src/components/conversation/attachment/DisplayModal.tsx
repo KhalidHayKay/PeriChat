@@ -1,5 +1,4 @@
 import { isImage, isVideo } from '@/actions/file-check';
-import { env } from '@/config/env';
 import {
     ArrowLeft,
     ChevronLeft,
@@ -94,7 +93,7 @@ const DisplayModal = ({ data, onClose }: DisplayModalProps) => {
                                     onClick={() => {
                                         const link =
                                             document.createElement('a');
-                                        link.href = env.api.base + current.url; // assuming `current` is the current attachment
+                                        link.href = current.url; // assuming `current` is the current attachment
                                         link.download =
                                             current.name || 'attachment';
                                         link.click();
@@ -126,7 +125,7 @@ const DisplayModal = ({ data, onClose }: DisplayModalProps) => {
                             {/* Media */}
                             {isImage(current) && (
                                 <img
-                                    src={env.api.base + current.url}
+                                    src={current.url}
                                     alt='image'
                                     className='max-h-full max-w-full rounded-md object-contain'
                                 />
@@ -134,7 +133,7 @@ const DisplayModal = ({ data, onClose }: DisplayModalProps) => {
 
                             {isVideo(current) && (
                                 <video
-                                    src={env.api.base + current.url}
+                                    src={current.url}
                                     controls
                                     autoPlay
                                     className='max-h-full max-w-full rounded-md object-contain'

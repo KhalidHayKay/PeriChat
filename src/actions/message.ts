@@ -61,6 +61,7 @@ export const sendMessage = async (
     }
 };
 
+let tempIdCounter = -1;
 export const createTempMessage = (
     value: string,
     files: Attachment[],
@@ -69,7 +70,7 @@ export const createTempMessage = (
 ): Message & { tempId: string; status: 'sending' | 'failed' | 'delivered' } => {
     return {
         tempId: uuid(),
-        id: -1,
+        id: tempIdCounter--,
         message: value,
         conversationId: conversation.id,
         senderId: user.id,

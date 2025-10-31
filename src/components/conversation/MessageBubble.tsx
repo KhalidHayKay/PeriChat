@@ -1,7 +1,7 @@
 import { isImage, isVideo } from '@/actions/file-check';
-import { format } from 'date-fns';
-
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 import MessageAttachment from './attachment/MessageAttachment';
 
 interface MessageBubbleProps {
@@ -15,10 +15,10 @@ const MessageBubble = ({
     message,
     onAttachmentClick,
     user,
+    onRetryMessage,
 }: MessageBubbleProps) => {
-    // const messageStatus = message.status;
-    // const isSending = messageStatus === 'sending';
-    // const isFailed = messageStatus === 'failed';
+    const messageStatus = message.status;
+    const isFailed = messageStatus === 'failed';
     const isUserMessage = message.senderId === user.id;
 
     const displayableAttachments = message.attachments?.filter(
@@ -29,18 +29,15 @@ const MessageBubble = ({
         (att) => !isImage(att) && !isVideo(att)
     );
 
-    const hasText = message.message !== null;
-    // const hasAttachments =
-    //     message.attachments && message.attachments.length > 0;
+    const hasText = message.message !== '';
 
     return (
         <div
             key={message.id}
             className={cn(
                 'chat',
-                isUserMessage ? 'chat-end' : 'chat-start'
-                // isSending && 'opacity-60 transition-opacity',
-                // isFailed && 'opacity-80'
+                isUserMessage ? 'chat-end' : 'chat-start',
+                isFailed && 'opacity-70'
             )}
         >
             <div
@@ -57,12 +54,9 @@ const MessageBubble = ({
                 <time className='text-[0.8rem]'>
                     {format(message.createdAt, 'MMM dd, hh:mm aa')}
                 </time>
-                {/* {isSending && (
-                                    <Loader2 className='h-3 w-3 animate-spin text-muted-foreground' />
-                                )}
-                                {isFailed && (
-                                    <AlertCircle className='h-3 w-3 text-destructive' />
-                                )} */}
+                {isFailed && (
+                    <AlertCircle className='h-3 w-3 text-destructive' />
+                )}
             </div>
             <div
                 className={cn(
@@ -76,7 +70,8 @@ const MessageBubble = ({
                             'chat-bubble max-w-full shadow-sm rounded-xl before:size-0',
                             isUserMessage
                                 ? 'bg-periBlue text-secondary'
-                                : 'chat-bubble-primary'
+                                : 'chat-bubble-primary',
+                            isFailed && 'ring-1 ring-destructive/30'
                         )}
                     >
                         <p>{message.message}</p>
@@ -124,20 +119,22 @@ const MessageBubble = ({
                         </div>
                     )}
 
-                {/* {isFailed && onRetryMessage && (
-                                    <button
-                                        onClick={() =>
-                                            onRetryMessage(message as any)
-                                        }
-                                        className={cn(
-                                            'mt-1 flex items-center gap-1 text-xs text-destructive hover:text-destructive/80 transition-colors',
-                                            isUserMessage && 'self-end'
-                                        )}
-                                    >
-                                        <RefreshCw className='h-3 w-3' />
-                                        Retry
-                                    </button>
-                                )} */}
+                {isFailed && onRetryMessage && (
+                    <button
+                        onClick={() =>
+                            onRetryMessage(
+                                message as Message & { tempId: string }
+                            )
+                        }
+                        className={cn(
+                            'mt-1 flex items-center gap-1 text-xs text-destructive hover:text-destructive/80 transition-colors',
+                            isUserMessage && 'self-end'
+                        )}
+                    >
+                        <RefreshCw className='h-3 w-3' />
+                        Retry
+                    </button>
+                )}
             </div>
         </div>
     );
