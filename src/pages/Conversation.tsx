@@ -52,7 +52,7 @@ const Conversation = () => {
                 onSuccess: (realMessage, tempId) => {
                     setMessages((prev) =>
                         prev.map((m) =>
-                            (m as any).tempId === tempId
+                            m.tempId === tempId
                                 ? { ...realMessage, status: 'delivered' }
                                 : m
                         )
@@ -69,9 +69,7 @@ const Conversation = () => {
                 onError: (tempId) => {
                     setMessages((prev) =>
                         prev.map((m) =>
-                            (m as any).tempId === tempId
-                                ? { ...m, status: 'failed' }
-                                : m
+                            m.tempId === tempId ? { ...m, status: 'failed' } : m
                         )
                     );
 
@@ -89,10 +87,10 @@ const Conversation = () => {
     );
 
     const handleRetryMessage = useCallback(
-        async (failedMessage: Message & { tempId: string }) => {
+        async (failedMessage: Message) => {
             // Remove the failed message
             setMessages((prev) =>
-                prev.filter((m) => (m as any).tempId !== failedMessage.tempId)
+                prev.filter((m) => m.tempId !== failedMessage.tempId)
             );
 
             // For temp/failed messages, attachments are always Attachment[] type

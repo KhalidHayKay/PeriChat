@@ -48,8 +48,6 @@ const ConversationInput = ({
         try {
             await handleSend(messageText, messageFiles, conversation);
 
-            setValue('');
-            setFiles([]);
             files.forEach((file) => URL.revokeObjectURL(file.url));
         } catch (error) {
             console.error('Failed to send message:', error);

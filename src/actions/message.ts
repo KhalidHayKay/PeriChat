@@ -67,9 +67,9 @@ export const createTempMessage = (
     files: Attachment[],
     conversation: Conversation,
     user: User
-): Message & { tempId: string; status: 'sending' | 'failed' | 'delivered' } => {
+): Message => {
     return {
-        tempId: uuid(),
+        tempId: Number(uuid()),
         id: tempIdCounter--,
         message: value,
         conversationId: conversation.id,
