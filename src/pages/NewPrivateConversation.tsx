@@ -11,7 +11,7 @@ import { useLocation, useNavigate } from 'react-router';
 const NewPrivateConversation = () => {
     const { updateConversations } = useConversationContext();
     const { emit } = useAppEventContext();
-    const { sendFirstMessage, sending: isCreating } = useSendMessage();
+    const { sendFirstMessage } = useSendMessage();
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -92,7 +92,6 @@ const NewPrivateConversation = () => {
             <ConversationInput
                 conversation={mockConversation}
                 handleSend={handleFirstMessage}
-                sending={isCreating}
             />
         </>
     );

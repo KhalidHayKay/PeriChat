@@ -12,10 +12,10 @@ const ChatLayout = () => {
     const otherUser = state?.otherUser as User | undefined;
 
     return (
-        <div className='min-h-screen bg-secondary'>
+        <div className='bg-secondary'>
             <div
                 className={cn(
-                    'flex h-screen sm:p-2 overflow-hidden',
+                    'flex h-dvh sm:p-2 overflow-hidden',
                     selectedConversation || otherUser
                         ? 'gap-x-0 sm:gap-x-2'
                         : 'sm:gap-x-2'
