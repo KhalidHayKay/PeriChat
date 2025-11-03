@@ -69,7 +69,7 @@ export const createTempMessage = (
     user: User
 ): Message => {
     return {
-        tempId: Number(uuid()),
+        tempId: uuid(),
         id: tempIdCounter--,
         message: value,
         conversationId: conversation.id,

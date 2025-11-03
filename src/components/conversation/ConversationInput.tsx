@@ -22,13 +22,11 @@ interface ConversationInputProps {
     ) => Promise<
         void | Message | { conversation: Conversation; message: Message }
     >;
-    sending: boolean;
 }
 
 const ConversationInput = ({
     conversation,
     handleSend,
-    sending,
 }: ConversationInputProps) => {
     const input = useRef<HTMLTextAreaElement>(null);
     const [value, setValue] = useState('');
@@ -36,7 +34,6 @@ const ConversationInput = ({
     const [files, setFiles] = useState<Attachment[]>([]);
 
     const handleSendMessage = async () => {
-        if (sending) return;
         if (value.trim() === '' && files.length === 0) return;
 
         const messageText = value;
@@ -127,7 +124,6 @@ const ConversationInput = ({
                             <Button
                                 variant='ghost'
                                 size='icon'
-                                disabled={sending}
                                 className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 p-0 hover:bg-transparent z-10'
                             >
                                 <Smile className='size-5' />
@@ -161,14 +157,12 @@ const ConversationInput = ({
                         placeholder='Write a message'
                         className='bg-transparent max-h-20 flex-1 border-none shadow-none resize-none custom-scrollbar pl-12 min-h-[2.5rem] py-2 focus-visible:ring-0'
                         rows={1}
-                        disabled={sending}
                     />
                 </div>
 
                 <label
                     className={cn(
-                        'size-10 flex items-center justify-center border border-secondary-content rounded-full cursor-pointer',
-                        sending && 'opacity-50 cursor-not-allowed'
+                        'size-10 flex items-center justify-center border border-secondary-content rounded-full cursor-pointer'
                     )}
                 >
                     <input
@@ -176,15 +170,12 @@ const ConversationInput = ({
                         multiple
                         onChange={handleFileChange}
                         className='hidden'
-                        disabled={sending}
                     />
                     <Plus className='size-4' />
                 </label>
 
                 <Button
-                    disabled={
-                        (value.trim() === '' && files.length === 0) || sending
-                    }
+                    disabled={value.trim() === '' && files.length === 0}
                     onClick={handleSendMessage}
                     className='size-10 p-0 bg-periBlue hover:bg-periBlue/90 disabled:bg-periBlue/50 rounded-full'
                 >

@@ -1,38 +1,57 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 export const useTempMessages = () => {
     const tempMessagesRef = useRef<Map<number, Message[]>>(new Map());
+    const [version, setVersion] = useState(0);
+
+    const forceUpdate = useCallback(() => setVersion((v) => v + 1), []);
 
     const addTempMessage = useCallback(
-        (conversationId: number, message: Message) => {
-            const existing = tempMessagesRef.current.get(conversationId) || [];
-            tempMessagesRef.current.set(conversationId, [...existing, message]);
+        (message: Message) => {
+            const existing =
+                tempMessagesRef.current.get(message.conversationId) || [];
+            tempMessagesRef.current.set(message.conversationId, [
+                ...existing,
+                message,
+            ]);
+            forceUpdate();
         },
-        []
+        [forceUpdate]
     );
 
     const updateTempMessage = useCallback(
-        (conversationId: number, tempId: number, updates: Partial<Message>) => {
-            const existing = tempMessagesRef.current.get(conversationId) || [];
+        (tempMessage: Message, updates: Partial<Message>) => {
+            const existing =
+                tempMessagesRef.current.get(tempMessage.conversationId) || [];
             tempMessagesRef.current.set(
-                conversationId,
+                tempMessage.conversationId,
                 existing.map((m) =>
-                    m.tempId === tempId ? { ...m, ...updates } : m
+                    m.tempId === tempMessage.tempId ? { ...m, ...updates } : m
                 )
             );
+            forceUpdate();
         },
-        []
+        [forceUpdate]
     );
 
     const removeTempMessage = useCallback(
-        (conversationId: number, tempId: number) => {
-            const existing = tempMessagesRef.current.get(conversationId) || [];
-            const filtered = existing.filter((m) => m.tempId !== tempId);
+        (tempMessage: Message) => {
+            const existing =
+                tempMessagesRef.current.get(tempMessage.conversationId) || [];
+            const filtered = existing.filter(
+                (m) => m.tempId !== tempMessage.tempId
+            );
             if (filtered.length === 0)
-                tempMessagesRef.current.delete(conversationId);
-            else tempMessagesRef.current.set(conversationId, filtered);
+                tempMessagesRef.current.delete(tempMessage.conversationId);
+            else
+                tempMessagesRef.current.set(
+                    tempMessage.conversationId,
+                    filtered
+                );
+
+            forceUpdate();
         },
-        []
+        [forceUpdate]
     );
 
     const getTempMessages = useCallback((conversationId: number) => {
@@ -41,7 +60,8 @@ export const useTempMessages = () => {
 
     const clearAllTempMessages = useCallback(() => {
         tempMessagesRef.current.clear();
-    }, []);
+        forceUpdate();
+    }, [forceUpdate]);
 
     return {
         getTempMessages,
@@ -49,5 +69,6 @@ export const useTempMessages = () => {
         updateTempMessage,
         removeTempMessage,
         clearAllTempMessages,
+        version,
     };
 };

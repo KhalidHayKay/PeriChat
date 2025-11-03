@@ -18,8 +18,8 @@ export const useSendMessage = () => {
             user: User,
             callbacks?: {
                 onOptimisticUpdate?: (tempMessage: Message) => void;
-                onSuccess?: (realMessage: Message, tempId: number) => void;
-                onError?: (tempId: number, error: Error) => void;
+                onSuccess?: (realMessage: Message, temMessage: Message) => void;
+                onError?: (tempMessage: Message, error: Error) => void;
             }
         ) => {
             setSending(true);
@@ -57,7 +57,7 @@ export const useSendMessage = () => {
                     (p) => setProgress(p)
                 );
 
-                callbacks?.onSuccess?.(realMessage, tempMessage.tempId ?? 0);
+                callbacks?.onSuccess?.(realMessage, tempMessage);
                 return realMessage;
             } catch (err) {
                 const error =
@@ -65,7 +65,7 @@ export const useSendMessage = () => {
                         ? err
                         : new Error('Failed to send message');
                 setError(error.message);
-                callbacks?.onError?.(tempMessage.tempId ?? 0, error);
+                callbacks?.onError?.(tempMessage, error);
                 throw err;
             } finally {
                 setSending(false);

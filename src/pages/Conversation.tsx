@@ -9,7 +9,8 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { useConversationContext } from '@/contexts/ConversationContext';
 import { useMessages } from '@/hooks/useMessages';
 import { useSendMessage } from '@/hooks/useSendMessage';
-import { useCallback } from 'react';
+import { useTempMessages } from '@/hooks/useTempMessages';
+import { useCallback, useMemo } from 'react';
 
 const Conversation = () => {
     const { user } = useAuthContext();
@@ -19,9 +20,25 @@ const Conversation = () => {
         selectedConversation,
         updateConversations,
     } = useConversationContext();
+    const { send } = useSendMessage();
+    const {
+        getTempMessages,
+        addTempMessage,
+        updateTempMessage,
+        removeTempMessage,
+        version,
+    } = useTempMessages();
     const { messages, setMessages, refreshMessages, error, loading } =
         useMessages(selectedConversation);
-    const { send, sending } = useSendMessage();
+
+    const mergedMessages = useMemo(() => {
+        const temps = getTempMessages(selectedConversation?.id ?? 0);
+        return [...messages, ...temps].sort(
+            (a, b) =>
+                new Date(a.createdAt).getTime() -
+                new Date(b.createdAt).getTime()
+        );
+    }, [messages, selectedConversation, getTempMessages, version]);
 
     const handleSend = useCallback(
         (
@@ -31,7 +48,7 @@ const Conversation = () => {
         ) => {
             return send(messageText, attachments, conversation, user, {
                 onOptimisticUpdate: (tempMessage) => {
-                    setMessages((prev) => [...prev, tempMessage]);
+                    // setMessages((prev) => [...prev, tempMessage]);
 
                     updateConversations((prev) =>
                         prev.map((c) =>
@@ -48,15 +65,22 @@ const Conversation = () => {
                                 : c
                         )
                     );
+
+                    addTempMessage(tempMessage);
                 },
-                onSuccess: (realMessage, tempId) => {
-                    setMessages((prev) =>
-                        prev.map((m) =>
-                            m.tempId === tempId
-                                ? { ...realMessage, status: 'delivered' }
-                                : m
-                        )
-                    );
+                onSuccess: (realMessage, tempMessage) => {
+                    // setMessages((prev) =>
+                    //     prev.map((m) =>
+                    //         m.tempId === tempMessage.tempId
+                    //             ? { ...realMessage, status: 'delivered' }
+                    //             : m
+                    //     )
+                    // );
+
+                    setMessages((prev) => [
+                        ...prev,
+                        { ...realMessage, status: 'delivered' },
+                    ]);
 
                     updateConversations((prev) =>
                         prev.map((c) =>
@@ -65,13 +89,17 @@ const Conversation = () => {
                                 : c
                         )
                     );
+
+                    removeTempMessage(tempMessage);
                 },
-                onError: (tempId) => {
-                    setMessages((prev) =>
-                        prev.map((m) =>
-                            m.tempId === tempId ? { ...m, status: 'failed' } : m
-                        )
-                    );
+                onError: (tempMessage: Message) => {
+                    // setMessages((prev) =>
+                    //     prev.map((m) =>
+                    //         m.tempId === tempMessage.tempId
+                    //             ? { ...m, status: 'failed' }
+                    //             : m
+                    //     )
+                    // );
 
                     updateConversations((prev) =>
                         prev.map((c) =>
@@ -80,10 +108,20 @@ const Conversation = () => {
                                 : c
                         )
                     );
+
+                    updateTempMessage(tempMessage, { status: 'failed' });
                 },
             });
         },
-        [send, user, setMessages, updateConversations]
+        [
+            send,
+            user,
+            setMessages,
+            updateConversations,
+            addTempMessage,
+            removeTempMessage,
+            updateTempMessage,
+        ]
     );
 
     const handleRetryMessage = useCallback(
@@ -92,8 +130,8 @@ const Conversation = () => {
             setMessages((prev) =>
                 prev.filter((m) => m.tempId !== failedMessage.tempId)
             );
+            removeTempMessage(failedMessage);
 
-            // For temp/failed messages, attachments are always Attachment[] type
             const tempAttachments = failedMessage.attachments as
                 | Attachment[]
                 | null;
@@ -127,7 +165,7 @@ const Conversation = () => {
                 selectedConversation as Conversation
             );
         },
-        [handleSend, selectedConversation, setMessages]
+        [handleSend, selectedConversation, setMessages, removeTempMessage]
     );
 
     if (isLoadingConversation) {
@@ -154,7 +192,7 @@ const Conversation = () => {
 
             <div className='flex-1 bg-secondary/50 overflow-hidden relative'>
                 <ConversationMessages
-                    messages={messages}
+                    messages={mergedMessages}
                     setMessages={setMessages}
                     refreshMessages={refreshMessages}
                     loading={loading}
@@ -168,7 +206,6 @@ const Conversation = () => {
             <ConversationInput
                 conversation={selectedConversation as Conversation}
                 handleSend={handleSend}
-                sending={sending}
             />
         </>
     );

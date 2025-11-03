@@ -44,11 +44,9 @@ export const useMessages = (
 
             try {
                 const { data } = await fetchMessages(conversationId);
-                if (data) {
-                    setMessages(data.reverse());
-                } else {
-                    setMessages([]);
-                }
+                const messages = data ? data.reverse() : [];
+
+                setMessages(messages);
             } catch (err) {
                 console.error('Failed to fetch messages:', err);
                 setError(

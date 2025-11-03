@@ -9,6 +9,6 @@ interface Message {
     attachments: Attachment[] | ServerAttachment[] | null;
     createdAt: string;
 
-    tempId?: number;
+    tempId?: string;
     status?: 'sending' | 'failed' | 'delivered';
 }
