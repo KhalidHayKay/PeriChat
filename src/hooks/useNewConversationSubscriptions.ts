@@ -1,4 +1,4 @@
-import useAppEventContext from '@/contexts/AppEventsContext';
+import { useAppEventContext } from '@/contexts/AppEventsContext';
 import { useConversationContext } from '@/contexts/ConversationContext';
 import { useEcho } from '@/contexts/EchoContext';
 import { useEffect } from 'react';

@@ -7,6 +7,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ConversationProvider } from './contexts/ConversationContext';
 import { EchoProvider } from './contexts/EchoContext';
 import { OnlineUsersProvider } from './contexts/OnlineUsersContext';
+import { TempMessagesProvider } from './contexts/TempMessagesContext';
 import AuthLayout from './layouts/AuthLayout';
 import ChatLayout from './layouts/ChatLayout';
 import Login from './pages/Auth/Login';
@@ -27,7 +28,9 @@ function App() {
                                     <OnlineUsersProvider>
                                         <AppEventProvider>
                                             <ConversationProvider>
-                                                <ChatLayout />
+                                                <TempMessagesProvider>
+                                                    <ChatLayout />
+                                                </TempMessagesProvider>
                                             </ConversationProvider>
                                         </AppEventProvider>
                                     </OnlineUsersProvider>

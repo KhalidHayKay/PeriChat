@@ -1,5 +1,5 @@
 import { loadOlderMessages } from '@/actions/message';
-import useEventBus from '@/contexts/AppEventsContext';
+import { useAppEventContext } from '@/contexts/AppEventsContext';
 import { Loader2 } from 'lucide-react';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -42,7 +42,7 @@ const ConversationMessages = ({
         index: number;
     } | null>(null);
 
-    const { emit } = useEventBus();
+    const { emit } = useAppEventContext();
 
     useEffect(() => {
         if (

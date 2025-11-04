@@ -38,7 +38,7 @@ export const AppEventProvider = ({ children }: { children: any }) => {
     );
 };
 
-const useAppEventContext = () => {
+export const useAppEventContext = () => {
     const context = useContext(AppEventContext);
     if (context === undefined) {
         throw new Error(
@@ -47,5 +47,3 @@ const useAppEventContext = () => {
     }
     return context;
 };
-
-export default useAppEventContext;

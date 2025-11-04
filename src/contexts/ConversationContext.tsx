@@ -3,7 +3,7 @@ import {
     incrementUnreadMessageCount,
     resetUnreadMessageCount,
 } from '@/actions/message-event';
-import useEventBus from '@/contexts/AppEventsContext';
+import { useAppEventContext } from '@/contexts/AppEventsContext';
 import {
     createContext,
     useCallback,
@@ -47,7 +47,7 @@ export const ConversationProvider = ({
     const [hasSearchedForConversation, setHasSearchedForConversation] =
         useState(false);
     const { conversationId } = useParams();
-    const { on } = useEventBus();
+    const { on } = useAppEventContext();
 
     useEffect(() => {
         const offIncrement = on('unread.increment', (message: Message) => {

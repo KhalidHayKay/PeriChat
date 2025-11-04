@@ -1,7 +1,7 @@
 import ConversationHeader from '@/components/conversation/ConversationHeader';
 import ConversationInput from '@/components/conversation/ConversationInput';
 import { Button } from '@/components/ui/button';
-import useAppEventContext from '@/contexts/AppEventsContext';
+import { useAppEventContext } from '@/contexts/AppEventsContext';
 import { useConversationContext } from '@/contexts/ConversationContext';
 import { useSendMessage } from '@/hooks/useSendMessage';
 import { X } from 'lucide-react';

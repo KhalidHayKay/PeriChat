@@ -1,5 +1,5 @@
 import { messageMatchesConversation } from '@/actions/helpers';
-import useAppEventContext from '@/contexts/AppEventsContext';
+import { useAppEventContext } from '@/contexts/AppEventsContext';
 import { useConversationContext } from '@/contexts/ConversationContext';
 import { useEcho } from '@/contexts/EchoContext';
 import { useEffect, useMemo, useRef } from 'react';
