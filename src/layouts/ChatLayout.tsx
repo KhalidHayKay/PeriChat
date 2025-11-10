@@ -23,8 +23,8 @@ const ChatLayout = () => {
             >
                 <LayoutAside user={user} />
 
-                <main className='flex-1 bg-primary rounded-lg shadow overflow-hidden min-w-0'>
-                    <div className='relative h-full flex flex-col divide-y divide-secondary'>
+                <main className='flex-1 bg-primary rounded-lg shadow overflow-hidden min-w-0 relative'>
+                    <div className='relative h-full flex flex-col'>
                         <Outlet />
                     </div>
                 </main>

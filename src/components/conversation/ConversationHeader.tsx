@@ -26,7 +26,7 @@ const ConversationHeader = ({
     });
 
     return (
-        <div className='p-4 flex items-center justify-between'>
+        <div className='max-sm:fixed max-sm:w-full max-sm:top-0 p-4 flex items-center justify-between z-50 bg-primary'>
             <div className='flex items-center gap-x-2'>
                 <Link to={routes.app.home}>
                     <ChevronLeft className='size-6' />

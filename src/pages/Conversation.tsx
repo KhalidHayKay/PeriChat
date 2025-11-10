@@ -48,18 +48,18 @@ const Conversation = () => {
                 selectedConversation={selectedConversation as Conversation}
             />
 
-            <div className='flex-1 bg-secondary/50 overflow-hidden relative'>
-                <ConversationMessages
-                    messages={conversationMessages}
-                    setMessages={setConversationMessages}
-                    refreshMessages={refreshMessages}
-                    loading={loading}
-                    error={error}
-                    selectedConversation={selectedConversation as Conversation}
-                    user={user}
-                    onRetryMessage={handleResend}
-                />
-            </div>
+            {/* <div className='flex-1 bg-secondary/50 overflow-hidden relative'> */}
+            <ConversationMessages
+                messages={conversationMessages}
+                setMessages={setConversationMessages}
+                refreshMessages={refreshMessages}
+                loading={loading}
+                error={error}
+                selectedConversation={selectedConversation as Conversation}
+                user={user}
+                onRetryMessage={handleResend}
+            />
+            {/* </div> */}
 
             <ConversationInput
                 conversation={selectedConversation as Conversation}

@@ -194,7 +194,7 @@ const ConversationMessages = ({
 
             <div
                 ref={conversationCtrRef}
-                className='max-h-full px-2 py-5 space-y-2 overflow-y-auto custom-scrollbar'
+                className='h-full flex-1 flex-col items-center px-2 py-5 space-y-2 overflow-y-auto hide-scrollbar pt-[100px] md:pt-0'
             >
                 <div
                     ref={loadOlderMessageIntercept}
