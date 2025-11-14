@@ -7,6 +7,8 @@ const getMimeType = (attachment: Attachment | ServerAttachment): string => {
         mime = attachment.mime;
     }
 
+    console.log(mime);
+
     return mime;
 };
 
@@ -31,16 +33,9 @@ export const isAudio = (attachment: Attachment | ServerAttachment) => {
 export const isAppFile = (attachment: Attachment | ServerAttachment) => {
     const mime = getMimeType(attachment);
 
-    return mime.split('/')[0].toLowerCase() === 'application';
-};
+    const fileType = mime.split('/')[0].toLowerCase();
 
-export const isPreviewable = (attachment: Attachment | ServerAttachment) => {
-    return (
-        isImage(attachment) ||
-        isVideo(attachment) ||
-        isAudio(attachment) ||
-        isAppFile(attachment)
-    );
+    return ['application', 'text'].includes(fileType);
 };
 
 export const formatBytes = (bytes: number, decimals = 2) => {

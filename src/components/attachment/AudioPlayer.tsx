@@ -1,13 +1,13 @@
-import { cn } from '@/lib/utils';
+import { cn, normalizeAttachment } from '@/lib/utils';
 import { Download, Pause, Play } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 export const AudioPlayer = ({
-    file,
+    audioFile,
     senderIsUser,
     hasText,
 }: {
-    file: ServerAttachment;
+    audioFile: Attachment | ServerAttachment;
     senderIsUser: boolean;
     hasText: boolean;
 }) => {
@@ -16,6 +16,8 @@ export const AudioPlayer = ({
     const [audioDuration, setAudioDuration] = useState(0);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const progressRef = useRef<HTMLDivElement>(null);
+
+    const file = normalizeAttachment(audioFile);
 
     useEffect(() => {
         const audio = new Audio(file.url);

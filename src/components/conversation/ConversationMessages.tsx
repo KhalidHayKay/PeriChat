@@ -1,13 +1,10 @@
 import { loadOlderMessages } from '@/actions/message';
 import { useAppEventContext } from '@/contexts/AppEventsContext';
 import { Loader2 } from 'lucide-react';
-
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-
+import DisplayModal from '../attachment/DisplayModal';
 import ConversationMessagesError from '../errors/ConversationMessagesError';
 import ConversationMessagesSkeleton from '../skeletons/ConversationMessagesSkeleton';
-
-import DisplayModal from '../attachment/DisplayModal';
 import MessageBubble from './MessageBubble';
 
 interface ConversationMessagesProps {

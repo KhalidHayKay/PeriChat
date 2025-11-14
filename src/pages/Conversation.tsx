@@ -48,7 +48,6 @@ const Conversation = () => {
                 selectedConversation={selectedConversation as Conversation}
             />
 
-            {/* <div className='flex-1 bg-secondary/50 overflow-hidden relative'> */}
             <ConversationMessages
                 messages={conversationMessages}
                 setMessages={setConversationMessages}
@@ -59,7 +58,6 @@ const Conversation = () => {
                 user={user}
                 onRetryMessage={handleResend}
             />
-            {/* </div> */}
 
             <ConversationInput
                 conversation={selectedConversation as Conversation}

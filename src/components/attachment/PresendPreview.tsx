@@ -1,10 +1,9 @@
 import { isAudio, isImage, isVideo } from '@/actions/file-check';
 import { cn } from '@/lib/utils';
 import { XCircle } from 'lucide-react';
-
-import AttachmentPreview from './AttachmentPreview';
-import AudioPreview from './AudioPreview';
-import VideoPreview from './VideoPreview';
+import AttachmentPreview from './previews/AttachmentPreview';
+import AudioPreview from './previews/AudioPreview';
+import VideoPreview from './previews/VideoPreview';
 
 const PresendPreview = ({
     files,
