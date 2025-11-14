@@ -57,7 +57,8 @@ const ConversationSearch = ({
                     <h1 className='text-lg font-semibold'>{user.name}</h1>
                     <p className='text-primary-content'>
                         <Link
-                            to='/settings/account'
+                            to='/'
+                            // to='/settings/account'
                             className='text-primary-content hover:underline'
                         >
                             Account
@@ -103,7 +104,10 @@ const ConversationSearch = ({
                         )}
                     />
                     <X
-                        onClick={() => setIsExpanded(false)}
+                        onClick={() => {
+                            setIsExpanded(false);
+                            search.set('');
+                        }}
                         className={cn(
                             'absolute right-3 top-1/2 -translate-y-1/2 size-5 text-secondary-content cursor-pointer transition-all duration-300 ease-in-out',
                             isExpanded
