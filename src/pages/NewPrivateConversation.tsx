@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAppEventContext } from '@/contexts/AppEventsContext';
 import { useConversationContext } from '@/contexts/ConversationContext';
 import { useSendMessage } from '@/hooks/useSendMessage';
-import { X } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 
@@ -13,6 +13,7 @@ const NewPrivateConversation = () => {
     const { emit } = useAppEventContext();
     const { sendFirstMessage } = useSendMessage();
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const { state } = useLocation();
     const otherUser = state?.otherUser as User | undefined;
@@ -25,6 +26,7 @@ const NewPrivateConversation = () => {
     const handleFirstMessage = useCallback(
         async (content: string, files: Attachment[]) => {
             setError(null);
+            setIsLoading(true);
 
             try {
                 await sendFirstMessage(content, files, Number(otherUser.id), {
@@ -42,11 +44,13 @@ const NewPrivateConversation = () => {
                     },
                     onError: (err) => {
                         setError(err.message);
+                        setIsLoading(false);
                     },
                 });
             } catch (err) {
                 // Error already handled in onError callback
                 console.error('Failed to create conversation:', err);
+                setIsLoading(false);
             }
         },
         [sendFirstMessage, otherUser, updateConversations, emit, navigate]
@@ -70,7 +74,11 @@ const NewPrivateConversation = () => {
             <ConversationHeader selectedConversation={mockConversation} />
 
             <div className='flex-1 bg-secondary/50 overflow-hidden relative flex items-center justify-center'>
-                {error ? (
+                {isLoading ? (
+                    <div className='text-center flex flex-col items-center gap-y-2 px-4'>
+                        <Loader2 className='size-10 animate-spin text-black' />
+                    </div>
+                ) : error ? (
                     <div className='text-center flex flex-col items-center gap-y-2 px-4'>
                         <p className='text-destructive text-sm'>{error}</p>
                         <Button
