@@ -2,7 +2,7 @@ import { isImage, isVideo } from '@/actions/file-check';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import MessageAttachment from './attachment/MessageAttachment';
+import MessageAttachment from '../attachment/MessageAttachment';
 
 interface MessageBubbleProps {
     message: Message;
@@ -19,7 +19,10 @@ const MessageBubble = ({
 }: MessageBubbleProps) => {
     const messageStatus = message.status;
     const isFailed = messageStatus === 'failed';
+    const isSending = messageStatus === 'sending';
     const isUserMessage = message.senderId === user.id;
+
+    console.log(message.attachments);
 
     const displayableAttachments = message.attachments?.filter(
         (att) => isImage(att) || isVideo(att)
@@ -29,7 +32,7 @@ const MessageBubble = ({
         (att) => !isImage(att) && !isVideo(att)
     );
 
-    const hasText = message.message !== '';
+    const hasText = !!message.message && message.message !== '';
 
     return (
         <div
@@ -37,7 +40,8 @@ const MessageBubble = ({
             className={cn(
                 'chat',
                 isUserMessage ? 'chat-end' : 'chat-start',
-                isFailed && 'opacity-70'
+                isFailed && 'opacity-70',
+                isSending && 'opacity-50'
             )}
         >
             <div

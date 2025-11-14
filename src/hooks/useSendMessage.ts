@@ -1,4 +1,3 @@
-// hooks/useSendMessage.ts
 import { createPrivateConversation } from '@/actions/conversation';
 import { createTempMessage, sendMessage } from '@/actions/message';
 import { ConversationTypeEnum } from '@/enums/enums';

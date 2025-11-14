@@ -2,7 +2,12 @@ import FormatChatDate from '@/actions/format-chat-date';
 import { routes } from '@/config/routes';
 import { ConversationTypeEnum } from '@/enums/enums';
 import { cn } from '@/lib/utils';
-import { AlertCircle, CheckCheck, FileIcon } from 'lucide-react';
+import {
+    AlertCircle,
+    CheckCheck,
+    CircleDotDashed,
+    FileIcon,
+} from 'lucide-react';
 import { Link } from 'react-router';
 import Avatar from '../Avatar';
 
@@ -19,6 +24,7 @@ const ConversationItem = ({
 }) => {
     const isLastMessageFromUser = conversation.lastMessageSenderId === user.id;
     const lastMessageFailed = conversation.lastMessageStatus === 'failed';
+    const lastMessageSending = conversation.lastMessageStatus === 'sending';
 
     return (
         <Link
@@ -63,6 +69,8 @@ const ConversationItem = ({
                     {isLastMessageFromUser ? (
                         lastMessageFailed ? (
                             <AlertCircle className='size-4 mt-0.5 text-destructive' />
+                        ) : lastMessageSending ? (
+                            <CircleDotDashed className='size-4 mt-0.5 text-secondary-content' />
                         ) : (
                             <CheckCheck className='size-4 mt-0.5 text-secondary-content' />
                         )

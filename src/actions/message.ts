@@ -71,7 +71,7 @@ export const createTempMessage = (
     return {
         tempId: uuid(),
         id: tempIdCounter--,
-        message: value,
+        message: value ?? '',
         conversationId: conversation.id,
         senderId: user.id,
         receiverId:

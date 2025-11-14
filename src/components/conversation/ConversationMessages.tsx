@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ConversationMessagesError from '../errors/ConversationMessagesError';
 import ConversationMessagesSkeleton from '../skeletons/ConversationMessagesSkeleton';
 
-import DisplayModal from './attachment/DisplayModal';
+import DisplayModal from '../attachment/DisplayModal';
 import MessageBubble from './MessageBubble';
 
 interface ConversationMessagesProps {

@@ -7,9 +7,7 @@ import {
 } from '@/actions/file-check';
 import { capitalize, cn } from '@/lib/utils';
 import { Download, File, PlayCircleIcon } from 'lucide-react';
-
 import { Fragment } from 'react/jsx-runtime';
-
 import { AudioPlayer } from './AudioPlayer';
 
 const MessageAttachment = ({
@@ -18,14 +16,27 @@ const MessageAttachment = ({
     hasText,
     onAttachmentClick,
 }: {
-    attachments: ServerAttachment[];
+    attachments: ServerAttachment[] | Attachment[];
     senderIsUser: boolean;
     hasText?: boolean;
     onAttachmentClick?: (index: number) => void;
 }) => {
     return attachments.map((attachment, i) => {
+        const clientFile = 'file' in attachment ? attachment.file : undefined;
+
+        const uniqueKey = `attachment-${'id' in attachment ? attachment.id : i}`;
+        const name =
+            'name' in attachment ? attachment.name : (clientFile?.name ?? '');
+        const mime =
+            'mime' in attachment ? attachment.mime : (clientFile?.type ?? '');
+        const size =
+            'size' in attachment ? attachment.size : (clientFile?.size ?? 0);
+        const url =
+            attachment.url ??
+            (clientFile ? URL.createObjectURL(clientFile) : '');
+
         return (
-            <Fragment key={attachment.id ?? i}>
+            <Fragment key={uniqueKey}>
                 {isImage(attachment) && (
                     <div
                         onClick={() => {
@@ -113,7 +124,7 @@ const MessageAttachment = ({
                                         : 'text-primary-content/70'
                                 )}
                             >
-                                <span>{formatBytes(attachment.size)},</span>
+                                <span>{formatBytes(size)},</span>
                                 <span>
                                     {capitalize(attachment.mime.split('/')[1])}{' '}
                                     File

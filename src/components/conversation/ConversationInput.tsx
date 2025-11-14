@@ -8,8 +8,8 @@ import { cn } from '@/lib/utils';
 import { Plus, Send, Smile } from 'lucide-react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
+import PresendPreview from '../attachment/PresendPreview';
 import { Textarea } from '../ui/textarea';
-import PresendPreview from './attachment/PresendPreview';
 
 const EmojiPicker = React.lazy(() => import('emoji-picker-react'));
 

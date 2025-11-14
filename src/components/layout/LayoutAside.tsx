@@ -10,8 +10,8 @@ import { capitalize, cn } from '@/lib/utils';
 
 import { useNewConversationSubscriptions } from '@/hooks/useNewConversationSubscriptions';
 import { useLocation } from 'react-router';
-import NewConversationDropdown from '../conversation/new/NewConversationDropdown';
 import ConversationSubjectError from '../errors/ConversationSubjectsError';
+import NewConversationDropdown from '../new-conversation/NewConversationDropdown';
 import ConversationSubjectsSkeleton from '../skeletons/ConversationSubjectSkeleton';
 
 type filterType = 'all' | 'private' | 'group';
