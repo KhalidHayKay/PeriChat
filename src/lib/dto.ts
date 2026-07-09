@@ -49,7 +49,7 @@ export const normalizeBackendConversation = (
     lastMessageSenderId: conversation.last_message_sender_id ?? 0,
     lastMessageDate: conversation.last_message_date ?? '',
     unreadMessageCount: conversation.unread_messages_count,
-    groupUsersId: conversation.group_members_id,
+    groupMemberIds: conversation.group_members_id,
     groupOwner: conversation.group_owner,
 });
 
@@ -87,7 +87,7 @@ export interface BackendGroup {
     avatar?: string | null;
     description?: string | null;
     is_private: boolean;
-    member_ids?: Array<number | string>;
+    member_ids: number[];
     owner: User;
     created_at: string;
     conversation_id: number;
@@ -99,9 +99,7 @@ export const normalizeBackendGroup = (group: BackendGroup): Group => ({
     avatar: group.avatar ?? null,
     description: group.description ?? null,
     isPrivate: group.is_private,
-    memberIds: group.member_ids
-        ? group.member_ids.map((m) => Number(m))
-        : undefined,
+    memberIds: group.member_ids.map((m) => Number(m)),
     owner: group.owner,
     createdAt: group.created_at,
     conversationId: group.conversation_id,

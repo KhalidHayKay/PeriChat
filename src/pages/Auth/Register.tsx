@@ -62,7 +62,7 @@ export default function Register() {
 
         const result = await handleRegister(credentials);
 
-        if (result.success) {
+        if (result.success && result.data) {
             login(result.data);
             navigate(routes.app.home);
         }

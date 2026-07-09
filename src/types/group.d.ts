@@ -6,6 +6,6 @@ interface Group {
     isPrivate: boolean;
     memberIds: number[];
     owner: User;
-    createdAt: date;
+    createdAt: string;
     conversationId: number;
 }

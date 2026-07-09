@@ -5,7 +5,7 @@ import { handleApiError } from '@/lib/handle-api-erros';
 import type {
     ConversationSubjectResponse,
     ConversationSuggestionResponse,
-} from './responses/conversation-responses';
+} from './response-types';
 
 export const sortConversations = (conversationsArray: Conversation[]) => {
     return conversationsArray.sort((a: Conversation, b: Conversation) => {

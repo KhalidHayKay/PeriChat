@@ -64,6 +64,8 @@ const NewPrivateConversation = () => {
         lastMessageSenderId: 0,
         lastMessageDate: '',
         unreadMessageCount: 0,
+        groupMemberIds: null,
+        groupOwner: null
     };
 
     return (

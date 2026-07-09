@@ -50,7 +50,7 @@ export default function Login() {
 
         const result = await handleLogin(email, password);
 
-        if (result.success) {
+        if (result.success && result.data) {
             login(result.data);
             navigate(routes.app.home);
         }

@@ -20,7 +20,7 @@ const ConversationHeader = ({
     );
 
     let onlineGroupUsers = 0;
-    selectedConversation.groupUsersId?.forEach((id) => {
+    selectedConversation.groupMemberIds?.forEach((id: number) => {
         if (checkIfUserIsOnline(id)) onlineGroupUsers++;
         return onlineGroupUsers;
     });
@@ -44,11 +44,11 @@ const ConversationHeader = ({
                     <p className='text-secondary-content text-sm ml-0.5'>
                         {!isPrivate
                             ? (onlineGroupUsers > 0
-                                  ? onlineGroupUsers - 1
-                                  : 0) + ' active'
+                                ? onlineGroupUsers - 1
+                                : 0) + ' active'
                             : isOnline
-                              ? 'online'
-                              : 'offline'}
+                                ? 'online'
+                                : 'offline'}
                     </p>
                 </div>
             </div>
