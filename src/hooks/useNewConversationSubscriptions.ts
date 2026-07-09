@@ -1,42 +1,52 @@
 import { useAppEventContext } from '@/contexts/AppEventsContext';
 import { useConversationContext } from '@/contexts/ConversationContext';
-import { useEcho } from '@/contexts/EchoContext';
+import { useSocket } from '@/contexts/SocketContext';
+import {
+    normalizeBackendConversation,
+    normalizeBackendMessage,
+    type BackendConversation,
+    type BackendMessage,
+} from '@/lib/dto';
 import { useEffect } from 'react';
 
 export const useNewConversationSubscriptions = (user: User) => {
-    const { echo, isConnected } = useEcho();
+    const { socket, isConnected } = useSocket();
     const { updateConversations } = useConversationContext();
     const { emit } = useAppEventContext();
 
     useEffect(() => {
-        if (!echo || !isConnected) return;
+        if (!socket || !isConnected) return;
 
-        const channelName = `user.${user.id}`;
+        socket.on('created:group', (subject: BackendConversation) => {
+            const conversation = normalizeBackendConversation(subject);
 
-        echo.private(channelName)
-            .listen('GroupCreated', (e: { conversation: Conversation }) => {
-                const { conversation } = e;
+            if (conversation.groupOwner?.id === user.id) return;
+
+            updateConversations((prev) => [conversation, ...prev]);
+        });
+
+        socket.on(
+            'created:conversation',
+            ({
+                subject,
+                message: serverMessage,
+            }: {
+                subject: BackendConversation;
+                message: BackendMessage;
+            }) => {
+                const message = normalizeBackendMessage(serverMessage);
+                const conversation = normalizeBackendConversation(subject);
+
+                if (conversation.lastMessageSenderId === user.id) return;
 
                 updateConversations((prev) => [conversation, ...prev]);
-            })
-            .listen(
-                'ConversationCreated',
-                (e: { conversation: Conversation; message: Message }) => {
-                    const { conversation, message } = e;
-
-                    updateConversations((prev) => [conversation, ...prev]);
-
-                    if (conversation.lastMessageSenderId !== user.id) {
-                        emit('unread.increment', message);
-                    }
-                }
-            )
-            .error((error: any) => {
-                console.error(`Error on channel ${channelName}:`, error);
-            });
+                emit('unread.increment', message);
+            }
+        );
 
         return () => {
-            echo.leave(channelName);
+            socket.off('created:group');
+            socket.off('created:conversation');
         };
-    }, [echo, isConnected, user.id, updateConversations, emit]);
+    }, [socket, isConnected, user.id, updateConversations, emit]);
 };

@@ -1,5 +1,6 @@
 import { formatBytes } from '@/actions/file-check';
-import { capitalize, cn, normalizeAttachment } from '@/lib/utils';
+import { normalizeAttachment } from '@/lib/dto';
+import { capitalize, cn } from '@/lib/utils';
 import { Download, File } from 'lucide-react';
 
 const FileViewer = ({

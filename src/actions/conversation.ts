@@ -1,6 +1,11 @@
 import { routes } from '@/config/routes';
 import api from '@/lib/api';
+import { normalizeBackendConversation } from '@/lib/dto';
 import { handleApiError } from '@/lib/handle-api-erros';
+import type {
+    ConversationSubjectResponse,
+    ConversationSuggestionResponse,
+} from './responses/conversation-responses';
 
 export const sortConversations = (conversationsArray: Conversation[]) => {
     return conversationsArray.sort((a: Conversation, b: Conversation) => {
@@ -15,63 +20,49 @@ export const sortConversations = (conversationsArray: Conversation[]) => {
 };
 
 export const fetchConversationSubjects = async () => {
-    return handleRequest(routes.api.conversation.subjects);
-};
-
-export const fetchAppUsers = async () => {
-    return handleRequest(routes.api.conversation.newUsers);
-};
-
-export const fetchPublicGroups = async () => {
-    return handleRequest(routes.api.conversation.newGroups);
-};
-
-export const fetchUsersForNewGroup = async () => {
-    return handleRequest(routes.api.conversation.newGroupUsers);
-};
-
-export const increment = (conversationId: number, messageId: number) => {
-    api.post(routes.api.message.unread(conversationId, messageId)).catch(
-        (err) => console.error(err)
-    );
-};
-
-export const resetUnread = async (conversationId: number) => {
-    api.post(routes.api.message.read(conversationId)).catch((err) =>
-        console.error(err)
-    );
-};
-
-const handleRequest = async (uri: string) => {
     try {
-        const res = await api.get(uri);
-        return res.data.data;
+        const res = await api.get<ConversationSubjectResponse>(
+            routes.api.conversation.subjects
+        );
+        return res.data.data.map(normalizeBackendConversation);
     } catch (error) {
         handleApiError(error);
+        throw error;
     }
 };
 
-export const createPrivateConversation = async (
-    otherUserId: number,
-    message: { message: string; attachments: Attachment[] }
-) => {
+export const fetchNonConversingUsers = async () => {
     try {
-        const data = new FormData();
-
-        message.attachments.forEach((file) =>
-            data.append('attachments[]', file.file)
-        );
-
-        data.append('message', message.message);
-
-        const res = await api.post(
-            routes.api.conversation.create(otherUserId),
-            data,
-            { headers: { 'Content-Type': 'multipart/form-data' } }
+        const res = await api.get<ConversationSuggestionResponse>(
+            routes.api.conversation.newUsers
         );
         return res.data.data;
     } catch (error) {
-        console.error('Failed to send message:', error);
         handleApiError(error);
+        throw error;
+    }
+};
+
+export const fetchJoinableGroups = async () => {
+    try {
+        const res = await api.get<ConversationSuggestionResponse>(
+            routes.api.conversation.newGroups
+        );
+        return res.data.data;
+    } catch (error) {
+        handleApiError(error);
+        throw error;
+    }
+};
+
+export const fetchUsersForNewGroup = async () => {
+    try {
+        const res = await api.get<{ message: string; data: User[] }>(
+            routes.api.group.candidates
+        );
+        return res.data.data;
+    } catch (error) {
+        handleApiError(error);
+        throw error;
     }
 };

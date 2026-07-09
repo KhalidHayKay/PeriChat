@@ -1,4 +1,5 @@
-import { cn, normalizeAttachment } from '@/lib/utils';
+import { normalizeAttachment } from '@/lib/dto';
+import { cn } from '@/lib/utils';
 import { Download, Pause, Play } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -39,9 +40,9 @@ export const AudioPlayer = ({
         return () => {
             audio.pause();
             audio.src = '';
-            audio.removeEventListener('loadedmetadata', () => {});
-            audio.removeEventListener('timeupdate', () => {});
-            audio.removeEventListener('ended', () => {});
+            audio.removeEventListener('loadedmetadata', () => { });
+            audio.removeEventListener('timeupdate', () => { });
+            audio.removeEventListener('ended', () => { });
         };
     }, [file.url]);
 

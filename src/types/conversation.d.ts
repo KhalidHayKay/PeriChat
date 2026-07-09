@@ -1,14 +1,17 @@
 interface Conversation {
     id: number;
     name: string;
-    type: string;
+    type: 'private' | 'group';
     typeId: number;
     avatar: string;
     lastMessage: string;
-    lastMessageStatus?: 'sending' | 'delivered' | 'failed';
     lastMessageAttachmentCount: number;
     lastMessageSenderId: number;
     lastMessageDate: string;
     unreadMessageCount: number;
-    groupUsersId?: number[];
+    groupMemberIds: number[] | null;
+    groupOwner: User | null;
+
+    // client side variables
+    lastMessageStatus?: 'sending' | 'delivered' | 'failed';
 }

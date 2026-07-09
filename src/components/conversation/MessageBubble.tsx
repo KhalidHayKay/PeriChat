@@ -22,8 +22,6 @@ const MessageBubble = ({
     const isSending = messageStatus === 'sending';
     const isUserMessage = message.senderId === user.id;
 
-    console.log(message.attachments);
-
     const displayableAttachments = message.attachments?.filter(
         (att) => isImage(att) || isVideo(att)
     );

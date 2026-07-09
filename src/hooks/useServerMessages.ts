@@ -39,8 +39,7 @@ export const useServerMessages = (
             }
 
             try {
-                const { data } = await fetchMessages(conversationId);
-                const messages = data ? data.reverse() : [];
+                const { messages } = await fetchMessages(conversationId);
 
                 setServerMessages(messages);
             } catch (err) {

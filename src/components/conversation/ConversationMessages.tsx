@@ -1,5 +1,4 @@
 import { loadOlderMessages } from '@/actions/message';
-import { useAppEventContext } from '@/contexts/AppEventsContext';
 import { Loader2 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import DisplayModal from '../attachment/DisplayModal';
@@ -38,20 +37,6 @@ const ConversationMessages = ({
         attachments: ServerAttachment[];
         index: number;
     } | null>(null);
-
-    const { emit } = useAppEventContext();
-
-    useEffect(() => {
-        if (
-            selectedConversation?.unreadMessageCount &&
-            selectedConversation.unreadMessageCount > 0
-        ) {
-            const timeoutId = setTimeout(() => {
-                emit('unread.reset', selectedConversation);
-            }, 0);
-            return () => clearTimeout(timeoutId);
-        }
-    }, [selectedConversation, emit]);
 
     const handleLoadOlderMessages = useCallback(async () => {
         if (noOlderMessages || loadingOlder) {
@@ -130,7 +115,7 @@ const ConversationMessages = ({
 
         const isScrollable = conversationCtrRef.current
             ? conversationCtrRef.current.scrollHeight >
-              conversationCtrRef.current.clientHeight
+            conversationCtrRef.current.clientHeight
             : false;
 
         if (!isScrollable) {

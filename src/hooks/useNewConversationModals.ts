@@ -14,7 +14,7 @@ interface UseNewConversationModalsReturn {
     closeGroupModal: () => void;
     closeAll: () => void;
     handleUserClick: (otherUser: User) => void;
-    handlePublicGroupJoin: (group: Group) => void;
+    handlePublicGroupJoin: (groupId: number) => void;
     handleGroupCreate: (data: { name: string; members: User[] }) => void;
 }
 
@@ -53,30 +53,51 @@ export const useNewConversationModals = (): UseNewConversationModalsReturn => {
         setDropdownIsOpen(false);
     }, []);
 
-    const handlePublicGroupJoin = useCallback(async (group: Group) => {
-        const res = await joinGroup(group.id);
+    const handlePublicGroupJoin = useCallback(async (groupId: number) => {
+        const group = await joinGroup(groupId);
+        const conversation: Conversation = {
+            id: group.conversationId,
+            name: group.name,
+            type: 'group',
+            typeId: group.id,
+            avatar: group.avatar ?? '',
+            lastMessage: 'You joined the group',
+            lastMessageAttachmentCount: 0,
+            lastMessageSenderId: 0,
+            lastMessageDate: new Date().toISOString(),
+            unreadMessageCount: 0,
+            groupMemberIds: group.memberIds,
+            groupOwner: group.owner,
+        };
 
-        if (res) {
-            updateConversations((prev) => [res, ...prev]);
-            navigate(routes.app.conversation(res.id));
-        }
-
+        updateConversations((prev) => [conversation, ...prev]);
+        navigate(routes.app.conversation(conversation.id));
         setGroupModalIsOpen(false);
     }, []);
 
     const handleGroupCreate = useCallback(
         async (data: { name: string; members: User[] }) => {
-            const reqData = {
+            const group = await createGroup({
                 name: data.name,
-                members: data.members.map((m) => m.id),
+                member_ids: data.members.map((m) => m.id),
+            });
+            const conversation: Conversation = {
+                id: group.conversationId,
+                name: group.name,
+                type: 'group',
+                typeId: group.id,
+                avatar: group.avatar ?? '',
+                lastMessage: 'You created this group',
+                lastMessageAttachmentCount: 0,
+                lastMessageSenderId: 0,
+                lastMessageDate: new Date().toISOString(),
+                unreadMessageCount: 0,
+                groupMemberIds: group.memberIds,
+                groupOwner: group.owner,
             };
 
-            const res = await createGroup(reqData);
-
-            if (res) {
-                navigate(routes.app.conversation(res.data.id));
-            }
-
+            updateConversations((prev) => [conversation, ...prev]);
+            navigate(routes.app.conversation(conversation.id));
             setGroupModalIsOpen(false);
         },
         []

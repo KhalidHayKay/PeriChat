@@ -1,4 +1,4 @@
-import { fetchAppUsers } from '@/actions/conversation';
+import { fetchNonConversingUsers } from '@/actions/conversation';
 import Avatar from '@/components/Avatar';
 import { useOnlineUsers } from '@/contexts/OnlineUsersContext';
 import usePreventScrollPropagation from '@/hooks/usePreventScrollPropagation';
@@ -32,8 +32,8 @@ const UserList = ({
             try {
                 setLoading(true);
                 setError(null);
-                const data = await fetchAppUsers();
-                setUsers(data || []);
+                const { users } = await fetchNonConversingUsers();
+                setUsers(users || []);
             } catch (err) {
                 setError(
                     err instanceof Error ? err.message : 'Failed to load users'

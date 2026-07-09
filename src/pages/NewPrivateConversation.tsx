@@ -1,7 +1,6 @@
 import ConversationHeader from '@/components/conversation/ConversationHeader';
 import ConversationInput from '@/components/conversation/ConversationInput';
 import { Button } from '@/components/ui/button';
-import { useAppEventContext } from '@/contexts/AppEventsContext';
 import { useConversationContext } from '@/contexts/ConversationContext';
 import { useSendMessage } from '@/hooks/useSendMessage';
 import { Loader2, X } from 'lucide-react';
@@ -10,7 +9,6 @@ import { useLocation, useNavigate } from 'react-router';
 
 const NewPrivateConversation = () => {
     const { updateConversations } = useConversationContext();
-    const { emit } = useAppEventContext();
     const { sendFirstMessage } = useSendMessage();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +30,6 @@ const NewPrivateConversation = () => {
                 await sendFirstMessage(content, files, Number(otherUser.id), {
                     onSuccess: (conversation, message) => {
                         updateConversations((prev) => [conversation, ...prev]);
-                        emit('message.created', message);
 
                         navigate(`/conversation/${conversation.id}`, {
                             replace: true,
@@ -53,7 +50,7 @@ const NewPrivateConversation = () => {
                 setIsLoading(false);
             }
         },
-        [sendFirstMessage, otherUser, updateConversations, emit, navigate]
+        [sendFirstMessage, otherUser, updateConversations, navigate]
     );
 
     const mockConversation: Conversation = {

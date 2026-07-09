@@ -8,25 +8,33 @@ export function cn(...inputs: ClassValue[]) {
 export const capitalize = (str: string) =>
     str.charAt(0).toUpperCase() + str.slice(1);
 
-export const normalizeAttachment = (
-    attachment: Attachment | ServerAttachment
-) => {
-    const clientFile = 'file' in attachment ? attachment.file : undefined;
+export const getConversationPreviewText = ({
+    conversation,
+    currentUserId,
+}: {
+    conversation: Conversation;
+    currentUserId: number;
+}) => {
+    const hasMessage = Boolean(conversation.lastMessage?.trim());
+    const hasAttachments = conversation.lastMessageAttachmentCount > 0;
 
-    const name =
-        'name' in attachment ? attachment.name : (clientFile?.name ?? '');
-    const mime =
-        'mime' in attachment ? attachment.mime : (clientFile?.type ?? '');
-    const size =
-        'size' in attachment ? attachment.size : (clientFile?.size ?? 0);
-    const url =
-        attachment.url ?? (clientFile ? URL.createObjectURL(clientFile) : '');
+    if (hasMessage) {
+        return conversation.lastMessage;
+    }
 
-    return {
-        ...attachment,
-        name,
-        mime,
-        size,
-        url,
-    };
+    if (hasAttachments) {
+        return 'Attachment';
+    }
+
+    if (conversation.type === 'group') {
+        if (conversation.groupOwner?.id === currentUserId) {
+            return 'You created this group';
+        }
+
+        if (conversation.groupOwner != null) {
+            return `${conversation.groupOwner.name ?? 'Someone'} added you to the group`;
+        }
+    }
+
+    return 'No messages yet';
 };

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import type { AuthResponse } from '@/actions/responses/auth-response';
 import { login, register } from '../actions/auth';
 
 const useAuth = () => {
@@ -8,7 +9,7 @@ const useAuth = () => {
 
     const handleRegister = async (
         credentials: SignUpCredentials
-    ): Promise<{ success: boolean; data?: any }> => {
+    ): Promise<{ success: boolean; data?: AuthResponse }> => {
         setIsLoading(true);
         setError(null);
         try {

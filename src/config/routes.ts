@@ -15,25 +15,21 @@ export const routes = {
         },
         getUser: (id: string) => `/api/user/${id}`,
         conversation: {
-            create: (userId: number) =>
-                `/conversation/create/private/${userId}`,
-            subjects: '/conversation/subjects',
-            newUsers: '/conversation/new/users',
-            newGroups: '/conversation/new/groups',
-            newGroupUsers: '/conversation/new/group-users',
+            subjects: '/conversations/',
+            newUsers: '/conversations/suggestions?type=user',
+            newGroups: '/conversations/suggestions?type=group',
+            messages: (id: number) => `/conversations/${id}`,
+            olderMessages: (id: number, lastMessageId: number) =>
+                `/conversations/${id}/older?last_message_id${lastMessageId}`,
         },
         group: {
-            create: '/group/new',
+            create: '/group',
+            candidates: '/group/candidates',
             join: (groupId: number) => `/group/${groupId}/join`,
         },
         message: {
-            load: (conversationId: number) =>
-                `/messaging/conversation/${conversationId}`,
-            loadOlder: (conversationId: number, lastMessageId: number) =>
-                `/messaging/conversation/${conversationId}/older/${lastMessageId}`,
-            send: (conversationId: number) =>
-                `/messaging/conversation/${conversationId}/send`,
-
+            send: '/messaging',
+            sendFirst: '/messaging/first',
             unread: (conversationId: number, messageId: number) =>
                 `/messaging/conversation/${conversationId}/message/${messageId}/unread/increment`,
             read: (conversationId: number) =>

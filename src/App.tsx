@@ -5,8 +5,6 @@ import ProtectedRoute from './components/routes/ProtectedRoute';
 import { AppEventProvider } from './contexts/AppEventsContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { ConversationProvider } from './contexts/ConversationContext';
-import { EchoProvider } from './contexts/EchoContext';
-import { OnlineUsersProvider } from './contexts/OnlineUsersContext';
 import { TempMessagesProvider } from './contexts/TempMessagesContext';
 import AuthLayout from './layouts/AuthLayout';
 import ChatLayout from './layouts/ChatLayout';
@@ -15,6 +13,8 @@ import Register from './pages/Auth/Register';
 import Conversation from './pages/Conversation';
 import Home from './pages/Home';
 import NewPrivateConversation from './pages/NewPrivateConversation';
+import { SocketProvider } from './contexts/SocketContext';
+import { OnlineUsersProvider } from './contexts/OnlineUsersContext';
 
 function App() {
     return (
@@ -24,7 +24,7 @@ function App() {
                     <Route
                         element={
                             <ProtectedRoute>
-                                <EchoProvider>
+                                <SocketProvider>
                                     <OnlineUsersProvider>
                                         <AppEventProvider>
                                             <ConversationProvider>
@@ -34,7 +34,7 @@ function App() {
                                             </ConversationProvider>
                                         </AppEventProvider>
                                     </OnlineUsersProvider>
-                                </EchoProvider>
+                                </SocketProvider>
                             </ProtectedRoute>
                         }
                     >

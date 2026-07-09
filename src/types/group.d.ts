@@ -2,8 +2,10 @@ interface Group {
     id: number;
     name: string;
     avatar: string | null;
-    description: string;
-    userIds?: number[];
+    description: string | null;
+    isPrivate: boolean;
+    memberIds: number[];
     owner: User;
-    created: date;
+    createdAt: date;
+    conversationId: number;
 }

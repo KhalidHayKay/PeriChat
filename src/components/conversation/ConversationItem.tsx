@@ -1,7 +1,7 @@
 import FormatChatDate from '@/actions/format-chat-date';
 import { routes } from '@/config/routes';
 import { ConversationTypeEnum } from '@/enums/enums';
-import { cn } from '@/lib/utils';
+import { cn, getConversationPreviewText } from '@/lib/utils';
 import {
     AlertCircle,
     CheckCheck,
@@ -25,6 +25,10 @@ const ConversationItem = ({
     const isLastMessageFromUser = conversation.lastMessageSenderId === user.id;
     const lastMessageFailed = conversation.lastMessageStatus === 'failed';
     const lastMessageSending = conversation.lastMessageStatus === 'sending';
+    const previewText = getConversationPreviewText({
+        conversation,
+        currentUserId: user.id,
+    });
 
     return (
         <Link
@@ -33,8 +37,8 @@ const ConversationItem = ({
                 'flex items-center gap-x-3 sm:gap-x-1 py-2 px-3 mobile:px-5 sm:px-3 rounded-md cursor-pointer transition',
                 'hover:bg-secondary/90',
                 selectedConversation?.type === conversation.type &&
-                    selectedConversation?.typeId === conversation.typeId &&
-                    'bg-secondary/90'
+                selectedConversation?.typeId === conversation.typeId &&
+                'bg-secondary/90'
             )}
         >
             <Avatar
@@ -48,7 +52,7 @@ const ConversationItem = ({
                         {conversation.name}
                     </h1>
                     <p className='text-secondary-content text-xs flex items-center'>
-                        {FormatChatDate(conversation.lastMessageDate)}
+                        {conversation.lastMessageDate ? FormatChatDate(conversation.lastMessageDate) : '...'}
                     </p>
                 </div>
                 <div className='flex items-center justify-between'>
@@ -57,13 +61,7 @@ const ConversationItem = ({
                             <FileIcon className='mr-1 w-4 h-4 flex-shrink-0' />
                         )}
                         <span className='max-w-full truncate'>
-                            {conversation.lastMessage ? (
-                                conversation.lastMessage
-                            ) : conversation.lastMessageAttachmentCount > 0 ? (
-                                <span className='text-sm'>Attachment</span>
-                            ) : (
-                                'No messages yet'
-                            )}
+                            {previewText}
                         </span>
                     </p>
                     {isLastMessageFromUser ? (

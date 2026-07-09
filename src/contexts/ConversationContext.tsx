@@ -1,8 +1,5 @@
 import { fetchConversationSubjects } from '@/actions/conversation';
-import {
-    incrementUnreadMessageCount,
-    resetUnreadMessageCount,
-} from '@/actions/message-event';
+import { messageMatchesConversation } from '@/actions/helpers';
 import { useAppEventContext } from '@/contexts/AppEventsContext';
 import {
     createContext,
@@ -54,12 +51,26 @@ export const ConversationProvider = ({
             {
                 if (Number(conversationId) === message.conversationId) return;
 
-                incrementUnreadMessageCount(message, setConversations);
+                setConversations((prev) =>
+                    prev.map((c) =>
+                        messageMatchesConversation(c, message)
+                            ? { ...c, unreadMessageCount: c.unreadMessageCount + 1 }
+                            : c
+                    )
+                );
             }
         });
-        const offReset = on('unread.reset', (conversation: Conversation) =>
-            resetUnreadMessageCount(conversation, setConversations)
-        );
+
+        const offReset = on('unread.reset', (conversation: Conversation) => {
+            setConversations((prev) => {
+                return prev.map((c) => {
+                    if (c.id === conversation.id) {
+                        return { ...c, unreadMessageCount: 0 };
+                    }
+                    return c;
+                });
+            });
+        });
 
         return () => {
             offIncrement();

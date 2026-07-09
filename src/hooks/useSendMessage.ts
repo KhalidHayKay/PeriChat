@@ -1,5 +1,8 @@
-import { createPrivateConversation } from '@/actions/conversation';
-import { createTempMessage, sendMessage } from '@/actions/message';
+import {
+    createFirstEverMessage,
+    createTempMessage,
+    sendMessage,
+} from '@/actions/message';
 import { ConversationTypeEnum } from '@/enums/enums';
 import { useCallback, useState } from 'react';
 
@@ -38,22 +41,19 @@ export const useSendMessage = () => {
             try {
                 const data = new FormData();
 
-                attachments.forEach((file) =>
-                    data.append('attachments[]', file.file)
-                );
-
-                data.append('message', messageText);
-
                 if (conversation.type === ConversationTypeEnum.PRIVATE) {
                     data.append('receiver_id', `${conversation.typeId}`);
                 } else if (conversation.type === ConversationTypeEnum.GROUP) {
                     data.append('group_id', `${conversation.typeId}`);
                 }
+                attachments.forEach((file) =>
+                    data.append('attachments[]', file.file)
+                );
+                data.append('content', messageText);
+                data.append('conversation_id', `${conversation.id}`);
 
-                const realMessage = await sendMessage(
-                    data,
-                    conversation.id,
-                    (p) => setProgress(p)
+                const realMessage = await sendMessage(data, (p) =>
+                    setProgress(p)
                 );
 
                 callbacks?.onSuccess?.(realMessage, tempMessage);
@@ -91,13 +91,16 @@ export const useSendMessage = () => {
             setError(null);
 
             try {
-                const reqMessage = {
-                    message: messageText,
-                    attachments: attachments,
-                };
+                const data = new FormData();
+
+                attachments.forEach((file) =>
+                    data.append('attachments[]', file.file)
+                );
+                data.append('content', messageText);
+                data.append('receiver_id', String(receiverId));
 
                 const { conversation, message } =
-                    await createPrivateConversation(receiverId, reqMessage);
+                    await createFirstEverMessage(data);
 
                 callbacks?.onSuccess?.(conversation, message);
                 return { conversation, message };

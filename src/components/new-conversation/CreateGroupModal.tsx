@@ -1,5 +1,5 @@
 import {
-    fetchPublicGroups,
+    fetchJoinableGroups,
     fetchUsersForNewGroup,
 } from '@/actions/conversation';
 import Avatar from '@/components/Avatar';
@@ -20,7 +20,7 @@ const CreateGroupModal = ({
 }: {
     handler: {
         create: (data: { name: string; members: User[] }) => void;
-        joinPublic: (group: Group) => void;
+        joinPublic: (groupId: number) => void;
     };
     closeModal: () => void;
 }) => {
@@ -67,12 +67,12 @@ const CreateGroupModal = ({
             try {
                 setLoading(true);
                 setError(null);
-                const [groupData, userData] = await Promise.all([
-                    fetchPublicGroups(),
+                const [{ groups }, userData] = await Promise.all([
+                    fetchJoinableGroups(),
                     fetchUsersForNewGroup(),
                 ]);
 
-                setPublicGroups(groupData || []);
+                setPublicGroups(groups || []);
                 setGroupUsers(userData || []);
             } catch (err) {
                 setError(
@@ -272,14 +272,14 @@ const CreateGroupModal = ({
                                                     {group.name}
                                                 </p>
                                                 <p className='text-xs text-secondary-content'>
-                                                    {group.userIds?.length || 0}{' '}
+                                                    {group.memberIds?.length || 0}{' '}
                                                     members
                                                 </p>
                                             </div>
                                         </div>
                                         <button
                                             onClick={() =>
-                                                handler.joinPublic(group)
+                                                handler.joinPublic(group.id)
                                             }
                                             className='text-xs bg-periBlue hover:bg-periBlue/90 text-white px-3 py-1.5 rounded transition-colors'
                                         >

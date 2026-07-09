@@ -1,59 +1,50 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-
-import { useEcho } from './EchoContext';
+import { useSocket } from './SocketContext';
 
 interface OnlineUsersContextType {
-    onlineUsers: Record<number, User>;
+    onlineUsers: Record<number, boolean>;
     checkIfUserIsOnline: (userId: number) => boolean;
 }
 
-const OnlineUsersContext = createContext<OnlineUsersContextType | undefined>(
-    undefined
-);
+const OnlineUsersContext = createContext<OnlineUsersContextType | undefined>(undefined);
 
-export const OnlineUsersProvider = ({
-    children,
-}: {
-    children: React.ReactNode;
-}) => {
-    const [onlineUsers, setOnlineUsers] = useState<Record<number, User>>({});
-    const { echo, isConnected } = useEcho();
+
+export const OnlineUsersProvider = ({ children }: { children: React.ReactNode }) => {
+    const [onlineUsers, setOnlineUsers] = useState<Record<number, boolean>>({});
+    const { socket, isConnected } = useSocket();
 
     useEffect(() => {
-        if (!echo || !isConnected) return;
+        if (!socket) return;
 
-        echo.join('online')
-            .here((users: User[]) => {
-                const onlineUsersObj = Object.fromEntries(
-                    users.map((user) => [user.id, user])
-                );
-                setOnlineUsers(onlineUsersObj);
-            })
-            .joining((user: User) => {
-                setOnlineUsers((prev) => ({ ...prev, [user.id]: user }));
-            })
-            .leaving((user: User) => {
-                setOnlineUsers((prev) => {
-                    const updated = { ...prev };
-                    delete updated[user.id];
-                    return updated;
-                });
-            })
-            .error((error: any) => {
-                console.error('Online users channel error:', error);
+        socket.on('users:online', (userIds: number[]) => {
+            const map = Object.fromEntries(userIds.map(id => [id, true]));
+            setOnlineUsers(map);
+        });
+
+        socket.on('user:online', ({ userId }: { userId: number }) => {
+            setOnlineUsers(prev => ({ ...prev, [userId]: true }));
+        });
+
+        socket.on('user:offline', ({ userId }: { userId: number }) => {
+            setOnlineUsers(prev => {
+                const updated = { ...prev };
+                delete updated[userId];
+                return updated;
             });
+        });
 
         return () => {
-            echo.leave('online');
+            socket.off('users:online');
+            socket.off('user:online');
+            socket.off('user:offline');
         };
-    }, [echo, isConnected]);
-
-    const checkIfUserIsOnline = (userId: number) => !!onlineUsers[userId];
+    }, [socket, isConnected]);
 
     return (
-        <OnlineUsersContext.Provider
-            value={{ onlineUsers, checkIfUserIsOnline }}
-        >
+        <OnlineUsersContext.Provider value={{
+            onlineUsers,
+            checkIfUserIsOnline: (userId) => onlineUsers[userId] === true,
+        }}>
             {children}
         </OnlineUsersContext.Provider>
     );
@@ -61,10 +52,6 @@ export const OnlineUsersProvider = ({
 
 export const useOnlineUsers = () => {
     const context = useContext(OnlineUsersContext);
-    if (!context) {
-        throw new Error(
-            'useOnlineUsers must be used within OnlineUsersProvider'
-        );
-    }
+    if (!context) throw new Error('useOnlineUsers must be used within OnlineUsersProvider');
     return context;
 };

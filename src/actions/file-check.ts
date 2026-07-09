@@ -7,8 +7,6 @@ const getMimeType = (attachment: Attachment | ServerAttachment): string => {
         mime = attachment.mime;
     }
 
-    console.log(mime);
-
     return mime;
 };
 

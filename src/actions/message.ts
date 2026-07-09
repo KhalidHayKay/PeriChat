@@ -1,14 +1,31 @@
 import { routes } from '@/config/routes';
 import api from '@/lib/api';
+import {
+    normalizeBackendConversation,
+    normalizeBackendMessage,
+} from '@/lib/dto';
 import { handleApiError } from '@/lib/handle-api-erros';
 import { v4 as uuid } from 'uuid';
+import type {
+    CreateFirstMessageResponse,
+    CreateMessageResponse,
+    FetchMessageResponse,
+} from './responses/message-response';
 
 export const fetchMessages = async (conversationId: number) => {
     try {
-        const res = await api.get(routes.api.message.load(conversationId));
-        return res.data;
+        const res = await api.get<FetchMessageResponse>(
+            routes.api.conversation.messages(conversationId)
+        );
+        const { messages, hasMore } = res.data.data;
+
+        return {
+            messages: messages.map(normalizeBackendMessage),
+            hasMore,
+        };
     } catch (error) {
         handleApiError(error);
+        throw error;
     }
 };
 
@@ -17,14 +34,14 @@ export const loadOlderMessages = async (
     lastMessageId: number
 ) => {
     try {
-        const res = await api.get(
-            routes.api.message.loadOlder(conversationId, lastMessageId)
+        const res = await api.get<FetchMessageResponse>(
+            routes.api.conversation.olderMessages(conversationId, lastMessageId)
         );
-        const olderMessages = res.data.data as Message[];
+        const { messages, hasMore } = res.data.data;
 
         return {
-            messages: olderMessages.reverse(),
-            hasMore: olderMessages.length > 0,
+            messages: messages.map(normalizeBackendMessage),
+            hasMore,
         };
     } catch (error) {
         console.error('Failed to load older messages:', error);
@@ -34,12 +51,11 @@ export const loadOlderMessages = async (
 
 export const sendMessage = async (
     data: FormData,
-    conversationId: number,
     onUploadProgress?: (progress: number) => void
 ) => {
     try {
-        const res = await api.post(
-            routes.api.message.send(conversationId),
+        const res = await api.post<CreateMessageResponse>(
+            routes.api.message.send,
             data,
             {
                 headers: { 'Content-Type': 'multipart/form-data' },
@@ -54,10 +70,32 @@ export const sendMessage = async (
             }
         );
 
-        return res.data;
+        return normalizeBackendMessage(res.data.data);
     } catch (error) {
         console.error('Failed to send message:', error);
         handleApiError(error);
+        throw error;
+    }
+};
+
+export const createFirstEverMessage = async (data: FormData) => {
+    try {
+        const res = await api.post<CreateFirstMessageResponse>(
+            routes.api.message.sendFirst,
+            data,
+            {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            }
+        );
+        const { message, conversation } = res.data.data;
+        return {
+            message: normalizeBackendMessage(message),
+            conversation: normalizeBackendConversation(conversation),
+        };
+    } catch (error) {
+        console.error('Failed to send message:', error);
+        handleApiError(error);
+        throw error;
     }
 };
 
@@ -75,8 +113,8 @@ export const createTempMessage = (
         conversationId: conversation.id,
         senderId: user.id,
         receiverId:
-            conversation.type === 'PRIVATE' ? conversation.typeId : null,
-        groupId: conversation.type === 'GROUP' ? conversation.typeId : null,
+            conversation.type === 'private' ? conversation.typeId : null,
+        groupId: conversation.type === 'group' ? conversation.typeId : null,
         sender: user,
         attachments:
             files.length > 0

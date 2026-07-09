@@ -7,6 +7,7 @@ import ConversationInputSkeleton from '@/components/skeletons/ConversationInputS
 import ConversationMessagesSkeleton from '@/components/skeletons/ConversationMessagesSkeleton';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useConversationContext } from '@/contexts/ConversationContext';
+import { useConversationViewSubscription } from '@/hooks/useConversationViewSubscription';
 import { useConvesationMessages } from '@/hooks/useConvesationMessages';
 
 const Conversation = () => {
@@ -25,6 +26,10 @@ const Conversation = () => {
         handleSend,
         handleResend,
     } = useConvesationMessages(user, selectedConversation);
+
+
+
+    useConversationViewSubscription(selectedConversation)
 
     if (isLoadingConversation) {
         return (

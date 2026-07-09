@@ -1,3 +1,4 @@
+import type { AuthResponse } from '@/actions/responses/auth-response';
 import { setLogout } from '@/lib/triggerLogout';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
@@ -15,8 +16,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     children,
 }) => {
     const isTokenExpired = (): boolean => {
-        const tokenMeta = localStorage.getItem('tokenMeta');
-        if (!tokenMeta) return true;
+        // const tokenMeta = localStorage.getItem('tokenMeta');
+        // if (!tokenMeta) return true;
 
         try {
             // const { expiration } = JSON.parse(tokenMeta);
@@ -37,16 +38,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const [isAuthenticated, setIsAuthenticated] = useState(getInitialAuthState);
     const [user, setUser] = useState(JSON.parse(userData || 'null'));
 
-    const login = (data: any) => {
+    const login = (data: AuthResponse) => {
         if (data && data.token) {
-            localStorage.setItem('authToken', data.token.access);
-            localStorage.setItem(
-                'tokenMeta',
-                JSON.stringify({
-                    type: data.token.type,
-                    expiration: data.token.expiration,
-                })
-            );
+            localStorage.setItem('authToken', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
 
             setUser(data.user);
