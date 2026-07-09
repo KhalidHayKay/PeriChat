@@ -22,8 +22,8 @@ const Avatar = ({
                     online === undefined
                         ? 'before:!size-0'
                         : online === true
-                            ? 'avatar-online'
-                            : 'avatar-offline before:!bg-gray-400'
+                          ? 'avatar-online'
+                          : 'avatar-offline before:!bg-gray-400'
                 )}
             >
                 <div

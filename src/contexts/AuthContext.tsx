@@ -1,11 +1,11 @@
-import type { AuthResponse } from '@/actions/responses/auth-response';
+import type { AuthResponse } from '@/actions/response-types';
 import { setLogout } from '@/lib/triggerLogout';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
     isAuthenticated: boolean;
     user: User;
-    login: (data: any) => void;
+    login: (data: AuthResponse) => void;
     logout: () => void;
     getToken: () => string | null;
 }

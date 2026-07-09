@@ -5,6 +5,8 @@ import ProtectedRoute from './components/routes/ProtectedRoute';
 import { AppEventProvider } from './contexts/AppEventsContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { ConversationProvider } from './contexts/ConversationContext';
+import { OnlineUsersProvider } from './contexts/OnlineUsersContext';
+import { SocketProvider } from './contexts/SocketContext';
 import { TempMessagesProvider } from './contexts/TempMessagesContext';
 import AuthLayout from './layouts/AuthLayout';
 import ChatLayout from './layouts/ChatLayout';
@@ -13,8 +15,6 @@ import Register from './pages/Auth/Register';
 import Conversation from './pages/Conversation';
 import Home from './pages/Home';
 import NewPrivateConversation from './pages/NewPrivateConversation';
-import { SocketProvider } from './contexts/SocketContext';
-import { OnlineUsersProvider } from './contexts/OnlineUsersContext';
 
 function App() {
     return (

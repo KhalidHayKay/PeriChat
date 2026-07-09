@@ -1,28 +1,40 @@
-import { createContext, useContext, useRef } from 'react';
+import { createContext, useContext, useRef, type ReactNode } from 'react';
+
+type AppEventHandler = (...args: unknown[]) => void;
 
 type AppEventDataTypes = {
-    emit: (name: string, ...data: any) => void;
-    on: (name: string, cb: (...args: any) => void) => () => void;
+    emit: <TArgs extends unknown[] = unknown[]>(
+        name: string,
+        ...data: TArgs
+    ) => void;
+    on: <TArgs extends unknown[] = unknown[]>(
+        name: string,
+        cb: (...args: TArgs) => void
+    ) => () => void;
 };
 
 const AppEventContext = createContext<AppEventDataTypes>(
     {} as AppEventDataTypes
 );
 
-export const AppEventProvider = ({ children }: { children: any }) => {
-    const events = useRef<{ [key: string]: any[] }>({});
+export const AppEventProvider = ({ children }: { children: ReactNode }) => {
+    const events = useRef<Record<string, AppEventHandler[]>>({});
 
-    const emit = (name: string, ...data: any) => {
-        if (events.current[name]) {
-            events.current[name].forEach((cb: (...d: any) => void) => {
-                cb(...data);
-            });
-        }
+    const emit = <TArgs extends unknown[] = unknown[]>(
+        name: string,
+        ...data: TArgs
+    ) => {
+        events.current[name]?.forEach((cb) => {
+            cb(...data);
+        });
     };
 
-    const on = (name: string, cb: (...args: any) => void) => {
+    const on = <TArgs extends unknown[] = unknown[]>(
+        name: string,
+        cb: (...args: TArgs) => void
+    ) => {
         if (!events.current[name]) events.current[name] = [];
-        events.current[name].push(cb);
+        events.current[name].push(cb as AppEventHandler);
 
         return () => {
             events.current[name] = events.current[name].filter(
@@ -42,7 +54,7 @@ export const useAppEventContext = () => {
     const context = useContext(AppEventContext);
     if (context === undefined) {
         throw new Error(
-            'useConversationContext must be used within a ConversationProvider'
+            'useAppEventContext must be used within an AppEventProvider'
         );
     }
     return context;

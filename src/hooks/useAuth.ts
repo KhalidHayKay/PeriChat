@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import type { AuthResponse } from '@/actions/responses/auth-response';
+import type { AuthResponse } from '@/actions/response-types';
 import { login, register } from '../actions/auth';
 
 const useAuth = () => {
@@ -9,15 +9,17 @@ const useAuth = () => {
 
     const handleRegister = async (
         credentials: SignUpCredentials
-    ): Promise<{ success: boolean; data?: AuthResponse }> => {
+    ): Promise<{ success: boolean; data: AuthResponse | null }> => {
         setIsLoading(true);
         setError(null);
         try {
             const data = await register(credentials);
             return { success: true, data };
-        } catch (err: any) {
-            setError(err.message);
-            return { success: false };
+        } catch (err) {
+            setError(
+                err instanceof Error ? err.message : "Couldn't process request"
+            );
+            return { success: false, data: null };
         } finally {
             setIsLoading(false);
         }
@@ -26,15 +28,17 @@ const useAuth = () => {
     const handleLogin = async (
         email: string,
         password: string
-    ): Promise<{ success: boolean; data?: any }> => {
+    ): Promise<{ success: boolean; data: AuthResponse | null }> => {
         setIsLoading(true);
         setError(null);
         try {
             const data = await login(email, password);
             return { success: true, data };
-        } catch (err: any) {
-            setError(err.message);
-            return { success: false };
+        } catch (err) {
+            setError(
+                err instanceof Error ? err.message : "Couldn't process request"
+            );
+            return { success: false, data: null };
         } finally {
             setIsLoading(false);
         }

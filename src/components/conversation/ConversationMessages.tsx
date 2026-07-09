@@ -115,7 +115,7 @@ const ConversationMessages = ({
 
         const isScrollable = conversationCtrRef.current
             ? conversationCtrRef.current.scrollHeight >
-            conversationCtrRef.current.clientHeight
+              conversationCtrRef.current.clientHeight
             : false;
 
         if (!isScrollable) {

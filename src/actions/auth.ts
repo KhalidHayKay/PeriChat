@@ -1,7 +1,7 @@
 import { routes } from '@/config/routes';
 import api from '@/lib/api';
 import { handleApiError } from '@/lib/handle-api-erros';
-import type { AuthResponse } from './responses/auth-response';
+import type { AuthResponse } from './response-types';
 
 // const login = async (email, password) => {
 //   try {
@@ -37,12 +37,13 @@ export const register = async (credentials: SignUpCredentials) => {
 
 export const login = async (email: string, password: string) => {
     try {
-        const response = await api.post(routes.api.auth.login, {
+        const response = await api.post<AuthResponse>(routes.api.auth.login, {
             email,
             password,
         });
         return response.data;
     } catch (error) {
         handleApiError(error);
+        throw error;
     }
 };

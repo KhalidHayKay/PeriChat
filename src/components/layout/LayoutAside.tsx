@@ -116,10 +116,10 @@ const LayoutAside = ({ user }: { user: User }) => {
                                 conversation={conversation}
                                 online={
                                     conversation.type ===
-                                        ConversationTypeEnum.PRIVATE
+                                    ConversationTypeEnum.PRIVATE
                                         ? checkIfUserIsOnline(
-                                            conversation.typeId
-                                        )
+                                              conversation.typeId
+                                          )
                                         : undefined
                                 }
                                 selectedConversation={selectedConversation}

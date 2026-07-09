@@ -10,7 +10,7 @@ import type {
     CreateFirstMessageResponse,
     CreateMessageResponse,
     FetchMessageResponse,
-} from './responses/message-response';
+} from './response-types';
 
 export const fetchMessages = async (conversationId: number) => {
     try {

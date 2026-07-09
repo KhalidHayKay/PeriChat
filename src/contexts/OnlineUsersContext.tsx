@@ -6,10 +6,15 @@ interface OnlineUsersContextType {
     checkIfUserIsOnline: (userId: number) => boolean;
 }
 
-const OnlineUsersContext = createContext<OnlineUsersContextType | undefined>(undefined);
+const OnlineUsersContext = createContext<OnlineUsersContextType | undefined>(
+    undefined
+);
 
-
-export const OnlineUsersProvider = ({ children }: { children: React.ReactNode }) => {
+export const OnlineUsersProvider = ({
+    children,
+}: {
+    children: React.ReactNode;
+}) => {
     const [onlineUsers, setOnlineUsers] = useState<Record<number, boolean>>({});
     const { socket, isConnected } = useSocket();
 
@@ -17,16 +22,16 @@ export const OnlineUsersProvider = ({ children }: { children: React.ReactNode })
         if (!socket) return;
 
         socket.on('users:online', (userIds: number[]) => {
-            const map = Object.fromEntries(userIds.map(id => [id, true]));
+            const map = Object.fromEntries(userIds.map((id) => [id, true]));
             setOnlineUsers(map);
         });
 
         socket.on('user:online', ({ userId }: { userId: number }) => {
-            setOnlineUsers(prev => ({ ...prev, [userId]: true }));
+            setOnlineUsers((prev) => ({ ...prev, [userId]: true }));
         });
 
         socket.on('user:offline', ({ userId }: { userId: number }) => {
-            setOnlineUsers(prev => {
+            setOnlineUsers((prev) => {
                 const updated = { ...prev };
                 delete updated[userId];
                 return updated;
@@ -41,10 +46,12 @@ export const OnlineUsersProvider = ({ children }: { children: React.ReactNode })
     }, [socket, isConnected]);
 
     return (
-        <OnlineUsersContext.Provider value={{
-            onlineUsers,
-            checkIfUserIsOnline: (userId) => onlineUsers[userId] === true,
-        }}>
+        <OnlineUsersContext.Provider
+            value={{
+                onlineUsers,
+                checkIfUserIsOnline: (userId) => onlineUsers[userId] === true,
+            }}
+        >
             {children}
         </OnlineUsersContext.Provider>
     );
@@ -52,6 +59,9 @@ export const OnlineUsersProvider = ({ children }: { children: React.ReactNode })
 
 export const useOnlineUsers = () => {
     const context = useContext(OnlineUsersContext);
-    if (!context) throw new Error('useOnlineUsers must be used within OnlineUsersProvider');
+    if (!context)
+        throw new Error(
+            'useOnlineUsers must be used within OnlineUsersProvider'
+        );
     return context;
 };

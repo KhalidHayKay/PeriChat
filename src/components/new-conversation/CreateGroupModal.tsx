@@ -272,7 +272,8 @@ const CreateGroupModal = ({
                                                     {group.name}
                                                 </p>
                                                 <p className='text-xs text-secondary-content'>
-                                                    {group.memberIds?.length || 0}{' '}
+                                                    {group.memberIds?.length ||
+                                                        0}{' '}
                                                     members
                                                 </p>
                                             </div>

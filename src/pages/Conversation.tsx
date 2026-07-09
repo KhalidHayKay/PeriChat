@@ -27,9 +27,7 @@ const Conversation = () => {
         handleResend,
     } = useConvesationMessages(user, selectedConversation);
 
-
-
-    useConversationViewSubscription(selectedConversation)
+    useConversationViewSubscription(selectedConversation);
 
     if (isLoadingConversation) {
         return (

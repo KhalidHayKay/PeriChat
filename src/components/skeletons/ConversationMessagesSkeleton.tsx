@@ -27,10 +27,10 @@ const ConversationMessagesSkeleton = () => {
                                 i % 4 === 0
                                     ? 'w-32'
                                     : i % 4 === 1
-                                        ? 'w-48'
-                                        : i % 4 === 2
-                                            ? 'w-24'
-                                            : 'w-40'
+                                      ? 'w-48'
+                                      : i % 4 === 2
+                                        ? 'w-24'
+                                        : 'w-40'
                             )}
                         />
                     </div>

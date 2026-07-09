@@ -1,7 +1,7 @@
+import { env } from '@/config/env';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { useAuthContext } from './AuthContext';
-import { env } from '@/config/env';
 
 interface SocketContextType {
     socket: Socket | null;

@@ -16,7 +16,7 @@ interface UseConvesationMessagesReturn {
         messageText: string,
         attachments: Attachment[],
         conversation: Conversation
-    ) => Promise<any>;
+    ) => Promise<Message>;
     handleResend: (failedMessage: Message) => Promise<void>;
 }
 
@@ -138,8 +138,7 @@ export const useConvesationMessages = (
             removeTempMessage(failedMessage);
 
             const tempAttachments = failedMessage.attachments as
-                | Attachment[]
-                | null;
+                Attachment[] | null;
 
             let attachments: Attachment[] = [];
 

@@ -2,9 +2,10 @@ import { routes } from '@/config/routes';
 import api from '@/lib/api';
 import { normalizeBackendGroup } from '@/lib/dto';
 import { handleApiError } from '@/lib/handle-api-erros';
-import type { CreateGroupResponse } from './responses/group-response';
+import type { CreateGroupRequest } from './request-types';
+import type { CreateGroupResponse } from './response-types';
 
-export const createGroup = async (data: any) => {
+export const createGroup = async (data: CreateGroupRequest) => {
     try {
         const res = await api.post<CreateGroupResponse>(
             routes.api.group.create,

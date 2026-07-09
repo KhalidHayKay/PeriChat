@@ -54,7 +54,10 @@ export const ConversationProvider = ({
                 setConversations((prev) =>
                     prev.map((c) =>
                         messageMatchesConversation(c, message)
-                            ? { ...c, unreadMessageCount: c.unreadMessageCount + 1 }
+                            ? {
+                                  ...c,
+                                  unreadMessageCount: c.unreadMessageCount + 1,
+                              }
                             : c
                     )
                 );
